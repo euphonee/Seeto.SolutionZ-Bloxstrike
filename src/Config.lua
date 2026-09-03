@@ -1,7 +1,20 @@
 -- config and state
 local HttpService = game:GetService("HttpService")
 
+local CONFIG_FOLDER = "Bloxstrike"
 local CONFIG_FILE = "Bloxstrike/config.json"
+
+local function ensureDirectory()
+    if type(makefolder) == "function" then
+        if type(isfolder) == "function" then
+            if not isfolder(CONFIG_FOLDER) then
+                pcall(makefolder, CONFIG_FOLDER)
+            end
+        else
+            pcall(makefolder, CONFIG_FOLDER)
+        end
+    end
+end
 
 local Config = {
     -- aim
@@ -154,6 +167,7 @@ function Config.save()
         UNLOAD_KEY = Config.UNLOAD_KEY and Config.UNLOAD_KEY.Name or "None"
     }
 
+    ensureDirectory()
     local ok, encoded = pcall(function() return HttpService:JSONEncode(payload) end)
     if ok and encoded then
         local writeOk, err = pcall(writefile, CONFIG_FILE, encoded)
