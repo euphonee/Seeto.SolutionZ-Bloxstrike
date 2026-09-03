@@ -123,8 +123,6 @@ function Bhop.init(Config)
         lastLookYaw = lookYaw
         return sample
     end
-
-    print("[Movement] Bunny Hop & Instant Auto-Strafe Loaded!")
 end
 
 function Bhop.cleanup()
@@ -139,7 +137,6 @@ function Bhop.cleanup()
     Bhop.Initialized = false
     _G.__originalSampleInput = nil
     lastLookYaw = nil
-    print("[Movement] Hooks unloaded cleanly.")
 end
 
 return Bhop

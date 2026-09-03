@@ -115,8 +115,6 @@ local renderConn = nil
 local keyConn = nil
 
 local function cleanup()
-    print("[Bloxstrike] Unloading suite...")
-    
     if renderConn then pcall(function() renderConn:Disconnect() end) end
     if keyConn then pcall(function() keyConn:Disconnect() end) end
     
@@ -132,7 +130,6 @@ local function cleanup()
     pcall(function() fovCircle:Remove() end)
     
     _G.__bloxstrikeJanitor = nil
-    print("[Bloxstrike] Unloaded successfully.")
 end
 
 _G.__bloxstrikeJanitor = cleanup
@@ -174,6 +171,5 @@ keyConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("[Bloxstrike] Seeto.SolutionZ / Bloxstrike / v2.1 Loaded Successfully!")
-print("[Bloxstrike] Menu: [Insert] or [Right Shift] | Panic / Unload: [" .. (Config.UNLOAD_KEY and Config.UNLOAD_KEY.Name or "K") .. "]")
-return "Seeto.SolutionZ / Bloxstrike / v2.1 Loaded"
+print("Seeto.SolutionZ / Bloxstrike / v2.1")
+return "Seeto.SolutionZ / Bloxstrike / v2.1"

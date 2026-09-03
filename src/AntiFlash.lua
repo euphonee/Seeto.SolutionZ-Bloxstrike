@@ -91,8 +91,6 @@ function AntiFlash.init(Config)
         end
     end)
     table.insert(AntiFlash.Connections, renderConn)
-
-    print("[AntiFlash] Loaded! Flash blinding neutralized.")
 end
 
 function AntiFlash.cleanup()
@@ -109,7 +107,6 @@ function AntiFlash.cleanup()
     end
     AntiFlash.Initialized = false
     _G.__originalCaptureScreenshot = nil
-    print("[AntiFlash] Unloaded cleanly.")
 end
 
 return AntiFlash

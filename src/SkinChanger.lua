@@ -367,7 +367,6 @@ function SkinChanger.init(Config)
     end
 
     SkinChanger.refreshActiveViewmodels(Config)
-    print("[Skin Changer] Knife Customizer & Weapon Skins Active!")
 end
 
 function SkinChanger.cleanup()
@@ -394,7 +393,6 @@ function SkinChanger.cleanup()
     _G.__originalGetCharacterModel = nil
     SkinChanger.RandomCache = {}
     SkinChanger.Initialized = false
-    print("[Skin Changer] Unloaded cleanly.")
 end
 
 return SkinChanger

@@ -158,7 +158,6 @@ function Config.save()
     if ok and encoded then
         local writeOk, err = pcall(writefile, CONFIG_FILE, encoded)
         if writeOk then
-            print("[Bloxstrike] Configuration saved locally to " .. CONFIG_FILE)
             return true
         end
     end
@@ -210,7 +209,6 @@ function Config.load()
         end
     end
 
-    print("[Bloxstrike] Configuration loaded locally from " .. CONFIG_FILE)
     return true
 end
 
@@ -225,7 +223,6 @@ function Config.reset()
         end
     end
     Config.save()
-    print("[Bloxstrike] Configuration reset to defaults.")
 end
 
 return Config
