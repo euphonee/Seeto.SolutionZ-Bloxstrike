@@ -1,0 +1,4 @@
+﻿config.json
+unused/
+*.log
+.DS_Store
