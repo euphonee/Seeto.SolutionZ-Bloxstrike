@@ -46,7 +46,6 @@ local Config = {
 
     -- movement
     BHOP_ENABLED = true,
-    AUTO_STRAFE_ENABLED = true,
 
     -- utilities
     ANTI_FLASH_ENABLED = true,
@@ -112,7 +111,6 @@ local DEFAULT_VALUES = {
     OCCLUSION_CHECK_ENABLED = true,
     SPECTATE_CHECKER_ENABLED = true,
     BHOP_ENABLED = true,
-    AUTO_STRAFE_ENABLED = false,
     ANTI_FLASH_ENABLED = true,
     ANTI_FLASH_TRANSPARENCY = 0.85,
     SKINS_ENABLED = true,
@@ -149,7 +147,6 @@ function Config.save()
         SPECTATE_CHECKER_ENABLED = Config.SPECTATE_CHECKER_ENABLED,
 
         BHOP_ENABLED = Config.BHOP_ENABLED,
-        AUTO_STRAFE_ENABLED = Config.AUTO_STRAFE_ENABLED,
 
         ANTI_FLASH_ENABLED = Config.ANTI_FLASH_ENABLED,
         ANTI_FLASH_TRANSPARENCY = Config.ANTI_FLASH_TRANSPARENCY,

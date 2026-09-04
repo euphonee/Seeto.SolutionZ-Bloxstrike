@@ -239,15 +239,6 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
         end
     })
 
-    MoveMain:AddToggle("AutoStrafe", {
-        Text = "Auto strafe",
-        Default = (Config.AUTO_STRAFE_ENABLED ~= false),
-        Tooltip = "Instant midair directional acceleration without moving your mouse",
-        Callback = function(Value)
-            updateSetting("AUTO_STRAFE_ENABLED", Value)
-        end
-    })
-
     -- skins tab
     local SkinsMain = Tabs.Skins:AddLeftGroupbox("Knife & Skin Settings")
     local SkinsActions = Tabs.Skins:AddRightGroupbox("Actions & Presets")
@@ -397,7 +388,6 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
             if Options.FlashOpacity then Options.FlashOpacity:SetValue(math.floor((Config.ANTI_FLASH_TRANSPARENCY or 0.85) * 100)) end
 
             if Toggles.Bhop then Toggles.Bhop:SetValue(Config.BHOP_ENABLED) end
-            if Toggles.AutoStrafe then Toggles.AutoStrafe:SetValue(Config.AUTO_STRAFE_ENABLED) end
             if Toggles.CustomPresets then Toggles.CustomPresets:SetValue(Config.SKINS_ENABLED) end
             if Options.KnifeModel then Options.KnifeModel:SetValue(Config.KNIFE_MODEL or "Butterfly Knife") end
             if Options.SkinMode then Options.SkinMode:SetValue(Config.SKIN_MODE or "Special") end

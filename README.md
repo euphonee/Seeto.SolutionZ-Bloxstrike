@@ -1,4 +1,4 @@
-﻿# Seeto.SolutionZ / Bloxstrike
+# Seeto.SolutionZ / Bloxstrike
 
 > Lightweight, modular utility suite for Bloxstrike.
 
@@ -12,7 +12,7 @@ loadstring(game:HttpGet(https://raw.githubusercontent.com/euphonee/Bloxstrike/ma
 
 - **Aim**: Angular FOV silent aim, lethal hitbox priority calculation, target lock.
 - **Visuals**: 3D skeleton bone ESP, health indicators, view angle vectors, offscreen directional arrows, spectator monitor.
-- **Movement**: B-Hop, auto-strafe.
+- **Movement**: B-Hop.
 - **Skins**: Custom knife/skins.
 - **Utilities**: Anti-Flash.
 - **Interface**: High-performance LinoriaLib GUI, customizable binds, auto-saving config.
