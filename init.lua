@@ -97,7 +97,7 @@ TargetEngine.init(Config)
 local fovCircle = Drawing.new("Circle")
 fovCircle.Thickness = 1.5
 fovCircle.NumSides = 64
-fovCircle.Radius = Config.FOV_RADIUS
+fovCircle.Radius = 100
 fovCircle.Filled = false
 fovCircle.Transparency = Config.FOV_CIRCLE_TRANSPARENCY or 0.5
 fovCircle.Color = Config.FOV_CIRCLE_COLOR or Color3.fromRGB(255, 255, 255)
