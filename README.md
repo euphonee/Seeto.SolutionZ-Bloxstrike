@@ -4,6 +4,8 @@
 
 ![Showcase](assets/showcase.jpg)
 
+![Menu](assets/menu.png)
+
 ## Loadstring
 
 ```lua
