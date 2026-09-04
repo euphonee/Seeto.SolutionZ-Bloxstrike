@@ -56,7 +56,7 @@ local function import(moduleName)
     
     -- remote github fallback
     local okHttp, remoteContent = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/euphonee/Bloxstrike/main/src/" .. moduleName .. ".lua")
+        return game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.SolutionZ-Bloxstrike/main/src/" .. moduleName .. ".lua")
     end)
     if okHttp and remoteContent and #remoteContent > 0 then
         local fn, loadErr = loadstring(remoteContent)
