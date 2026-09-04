@@ -2,6 +2,8 @@
 
 > Lightweight, modular utility suite for Bloxstrike.
 
+![Showcase](assets/showcase.jpg)
+
 ## Loadstring
 
 ```lua
