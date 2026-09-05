@@ -1,5 +1,6 @@
 -- config and state
 local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
 
 local CONFIG_FOLDER = "Bloxstrike"
 local CONFIG_FILE = "Bloxstrike/config.json"
@@ -125,6 +126,131 @@ local DEFAULT_VALUES = {
     UNLOAD_KEY = "K"
 }
 
+Config._keysDown = {}
+
+if not _G.__bloxstrikeInputTracked then
+    _G.__bloxstrikeInputTracked = true
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            Config._keysDown[input.KeyCode] = true
+            Config._keysDown[input.KeyCode.Name] = true
+        elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Config._keysDown["MB1"] = true
+        elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+            Config._keysDown["MB2"] = true
+        elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
+            Config._keysDown["MB3"] = true
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            Config._keysDown[input.KeyCode] = false
+            Config._keysDown[input.KeyCode.Name] = false
+        elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Config._keysDown["MB1"] = false
+        elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+            Config._keysDown["MB2"] = false
+        elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
+            Config._keysDown["MB3"] = false
+        end
+    end)
+end
+
+local InputController = nil
+pcall(function()
+    InputController = require(game:GetService("ReplicatedStorage").Controllers.InputController)
+end)
+
+-- query whether aim key is currently held down
+function Config.isAimKeyHeld()
+    local key = Config.TOGGLE_AIM_KEY
+    if not key or key == "None" or key == "" then
+        return true
+    end
+
+    -- 1. Check mouse buttons
+    if key == "MB1" or key == Enum.UserInputType.MouseButton1 then
+        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) or (Config._keysDown["MB1"] == true) then
+            return true
+        end
+    elseif key == "MB2" or key == Enum.UserInputType.MouseButton2 then
+        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) or (Config._keysDown["MB2"] == true) then
+            return true
+        end
+    elseif key == "MB3" or key == Enum.UserInputType.MouseButton3 then
+        if UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton3) or (Config._keysDown["MB3"] == true) then
+            return true
+        end
+    end
+
+    -- 3. Check KeyCode direct engine query
+    if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
+        if UserInputService:IsKeyDown(key) or (Config._keysDown[key] == true) or (Config._keysDown[key.Name] == true) then
+            return true
+        end
+    end
+
+    -- 4. Check string key name
+    if type(key) == "string" then
+        local kc = Enum.KeyCode[key]
+        if kc and UserInputService:IsKeyDown(kc) then
+            return true
+        end
+        if (Config._keysDown[key] == true) or (kc and Config._keysDown[kc] == true) then
+            return true
+        end
+    end
+
+    -- 5. Check Bloxstrike InputController action states
+    if InputController then
+        local targetKc = (typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode) and key or (type(key) == "string" and Enum.KeyCode[key])
+        if targetKc then
+            local okBind, isPressed = pcall(InputController.isBindingPressed, targetKc)
+            if okBind and isPressed == true then
+                return true
+            end
+        end
+
+        local okUps, upsList = pcall(function()
+            if debug and debug.getupvalues then
+                return debug.getupvalues(InputController.isActionActive)
+            end
+            return nil
+        end)
+        if okUps and type(upsList) == "table" and type(upsList[1]) == "table" then
+            for _, act in pairs(upsList[1]) do
+                if type(act) == "table" and act.IsActive == true and type(act.Keybinds) == "table" then
+                    for _, kb in ipairs(act.Keybinds) do
+                        if kb == key or (targetKc and kb == targetKc) or (typeof(kb) == "EnumItem" and kb.Name == key) then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return false
+end
+
+-- query whether silent aim should actively redirect shots right now
+function Config.isSilentAimActive()
+    if UserInputService:GetFocusedTextBox() then
+        return false
+    end
+
+    local key = Config.TOGGLE_AIM_KEY
+    local hasKey = key and key ~= "None" and key ~= ""
+
+    local mode = Config.AIM_BIND_MODE or "Toggle"
+    if hasKey and mode == "Hold" then
+        return Config.isAimKeyHeld()
+    end
+
+    return (Config.SILENT_AIM_ENABLED ~= false)
+end
+
 -- save settings
 function Config.save()
     if type(writefile) ~= "function" then return false, "writefile not available" end
@@ -158,7 +284,7 @@ function Config.save()
 
         TOGGLE_UI_KEY = Config.TOGGLE_UI_KEY and Config.TOGGLE_UI_KEY.Name or "None",
         TOGGLE_UI_KEY_ALT = Config.TOGGLE_UI_KEY_ALT and Config.TOGGLE_UI_KEY_ALT.Name or "None",
-        TOGGLE_AIM_KEY = Config.TOGGLE_AIM_KEY and Config.TOGGLE_AIM_KEY.Name or "None",
+        TOGGLE_AIM_KEY = (type(Config.TOGGLE_AIM_KEY) == "string" and Config.TOGGLE_AIM_KEY) or (Config.TOGGLE_AIM_KEY and Config.TOGGLE_AIM_KEY.Name) or "None",
         AIM_BIND_MODE = Config.AIM_BIND_MODE or "Toggle",
         TOGGLE_ESP_KEY = Config.TOGGLE_ESP_KEY and Config.TOGGLE_ESP_KEY.Name or "None",
         UNLOAD_KEY = Config.UNLOAD_KEY and Config.UNLOAD_KEY.Name or "None"
@@ -196,7 +322,16 @@ function Config.load()
     if not decodeOk or type(data) ~= "table" then return false end
 
     for key, val in pairs(data) do
-        if key == "TOGGLE_UI_KEY" or key == "TOGGLE_UI_KEY_ALT" or key == "TOGGLE_AIM_KEY" or key == "TOGGLE_ESP_KEY" or key == "UNLOAD_KEY" then
+        if key == "TOGGLE_AIM_KEY" then
+            if val == "None" or val == nil or val == "" then
+                Config[key] = nil
+            elseif val == "MB1" or val == "MB2" or val == "MB3" then
+                Config[key] = val
+            else
+                local kc = Enum.KeyCode[val]
+                Config[key] = kc or nil
+            end
+        elseif key == "TOGGLE_UI_KEY" or key == "TOGGLE_UI_KEY_ALT" or key == "TOGGLE_ESP_KEY" or key == "UNLOAD_KEY" then
             if val == "None" or val == nil or val == "" then
                 Config[key] = nil
             else
@@ -228,7 +363,7 @@ function Config.reset()
     for key, val in pairs(DEFAULT_VALUES) do
         if key == "TOGGLE_UI_KEY" or key == "TOGGLE_UI_KEY_ALT" or key == "TOGGLE_AIM_KEY" or key == "UNLOAD_KEY" then
             local kc = Enum.KeyCode[val]
-            if kc then Config[key] = kc end
+            if kc then Config[key] = kc else Config[key] = (val == "None" and nil or val) end
         else
             Config[key] = val
         end

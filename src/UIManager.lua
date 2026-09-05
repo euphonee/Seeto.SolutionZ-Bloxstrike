@@ -317,13 +317,21 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
         end
     })
 
-    local defaultAimKey = (Config.TOGGLE_AIM_KEY and Config.TOGGLE_AIM_KEY.Name) or "None"
+    local defaultAimKey = (type(Config.TOGGLE_AIM_KEY) == "string" and Config.TOGGLE_AIM_KEY) or (Config.TOGGLE_AIM_KEY and Config.TOGGLE_AIM_KEY.Name) or "None"
     MenuGroup:AddLabel("Silent aim bind"):AddKeyPicker("AimKeybind", {
         Default = defaultAimKey,
+        Mode = Config.AIM_BIND_MODE or "Hold",
         NoUI = true,
         Text = "Silent aim bind",
         ChangedCallback = function(NewKey)
-            local key = (NewKey ~= "None") and Enum.KeyCode[NewKey] or nil
+            local key = nil
+            if NewKey and NewKey ~= "None" then
+                if NewKey == "MB1" or NewKey == "MB2" or NewKey == "MB3" then
+                    key = NewKey
+                else
+                    key = Enum.KeyCode[NewKey] or NewKey
+                end
+            end
             updateSetting("TOGGLE_AIM_KEY", key)
         end
     })
@@ -336,6 +344,10 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
         Tooltip = "Toggle: Press key to toggle silent aim on/off\nHold: Hold key to activate silent aim",
         Callback = function(Value)
             updateSetting("AIM_BIND_MODE", Value)
+            if Options and Options.AimKeybind then
+                Options.AimKeybind.Mode = Value
+                Options.AimKeybind.Toggled = false
+            end
         end
     })
 
@@ -419,49 +431,54 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
     })
 
     -- key listeners
+    local function matchesAimKey(input)
+        local key = Config.TOGGLE_AIM_KEY
+        if not key or key == "None" then return false end
+
+        if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
+            return input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == key
+        end
+
+        if type(key) == "string" then
+            if key == "MB1" then
+                return input.UserInputType == Enum.UserInputType.MouseButton1
+            elseif key == "MB2" then
+                return input.UserInputType == Enum.UserInputType.MouseButton2
+            elseif key == "MB3" then
+                return input.UserInputType == Enum.UserInputType.MouseButton3
+            elseif Enum.KeyCode[key] then
+                return input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode[key]
+            end
+        end
+
+        return false
+    end
+
     local bindInputBegan = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed or (Library and Library.IsPickingKey) then return end
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            if Config.TOGGLE_AIM_KEY and input.KeyCode == Config.TOGGLE_AIM_KEY then
-                if Config.AIM_BIND_MODE == "Hold" then
-                    updateSetting("SILENT_AIM_ENABLED", true)
-                    if Toggles.SilentAim and Toggles.SilentAim.Value ~= true then
-                        Toggles.SilentAim:SetValue(true)
-                    end
-                else
-                    local nextState = not Config.SILENT_AIM_ENABLED
-                    updateSetting("SILENT_AIM_ENABLED", nextState)
-                    if Toggles.SilentAim and Toggles.SilentAim.Value ~= nextState then
-                        Toggles.SilentAim:SetValue(nextState)
-                    end
+        if Library and Library.IsPickingKey then return end
+        if UserInputService:GetFocusedTextBox() then return end
+
+        if matchesAimKey(input) then
+            if Config.AIM_BIND_MODE == "Toggle" then
+                local nextState = not Config.SILENT_AIM_ENABLED
+                updateSetting("SILENT_AIM_ENABLED", nextState)
+                if Toggles.SilentAim and Toggles.SilentAim.Value ~= nextState then
+                    Toggles.SilentAim:SetValue(nextState)
                 end
-            elseif Config.TOGGLE_ESP_KEY and input.KeyCode == Config.TOGGLE_ESP_KEY then
-                local nextState = not Config.ESP_ENABLED
-                updateSetting("ESP_ENABLED", nextState)
-                if Toggles.EspMaster and Toggles.EspMaster.Value ~= nextState then
-                    Toggles.EspMaster:SetValue(nextState)
-                end
-            elseif Config.TOGGLE_UI_KEY_ALT and input.KeyCode == Config.TOGGLE_UI_KEY_ALT then
-                if Window and Window.Holder then
-                    Window.Holder.Visible = not Window.Holder.Visible
-                end
+            end
+        elseif Config.TOGGLE_ESP_KEY and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Config.TOGGLE_ESP_KEY then
+            local nextState = not Config.ESP_ENABLED
+            updateSetting("ESP_ENABLED", nextState)
+            if Toggles.EspMaster and Toggles.EspMaster.Value ~= nextState then
+                Toggles.EspMaster:SetValue(nextState)
+            end
+        elseif Config.TOGGLE_UI_KEY_ALT and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Config.TOGGLE_UI_KEY_ALT then
+            if Window and Window.Holder then
+                Window.Holder.Visible = not Window.Holder.Visible
             end
         end
     end)
     table.insert(UIManager.Connections, bindInputBegan)
-
-    local bindInputEnded = UserInputService.InputEnded:Connect(function(input, gameProcessed)
-        if Library and Library.IsPickingKey then return end
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            if Config.TOGGLE_AIM_KEY and input.KeyCode == Config.TOGGLE_AIM_KEY and Config.AIM_BIND_MODE == "Hold" then
-                updateSetting("SILENT_AIM_ENABLED", false)
-                if Toggles.SilentAim and Toggles.SilentAim.Value ~= false then
-                    Toggles.SilentAim:SetValue(false)
-                end
-            end
-        end
-    end)
-    table.insert(UIManager.Connections, bindInputEnded)
 
     Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.1 Loaded!", 3)
 end

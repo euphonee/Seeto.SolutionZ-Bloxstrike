@@ -1,4 +1,2 @@
-﻿config.json
-unused/
+config.json
 *.log
-.DS_Store

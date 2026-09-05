@@ -11,12 +11,12 @@ if _G.__antiFlashJanitor then pcall(_G.__antiFlashJanitor) _G.__antiFlashJanitor
 if _G.__bhopJanitor then pcall(_G.__bhopJanitor) _G.__bhopJanitor = nil end
 if _G.__skinChangerJanitor then pcall(_G.__skinChangerJanitor) _G.__skinChangerJanitor = nil end
 
-if _G.__bulletOriginHook then
+if _G.__originalPerformRaycast then
     local ok, b = pcall(function() return require(game:GetService("ReplicatedStorage").Components.Weapon.Classes.Bullet) end)
-    if ok and b and _G.__bulletOriginHook then
-        b._performRaycast = _G.__bulletOriginHook
+    if ok and b and _G.__originalPerformRaycast then
+        b._performRaycast = _G.__originalPerformRaycast
     end
-    _G.__bulletOriginHook = nil
+    _G.__originalPerformRaycast = nil
 end
 
 local Workspace = game:GetService("Workspace")
@@ -164,7 +164,7 @@ end)
 
 -- unload key listener
 keyConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
+    if UserInputService:GetFocusedTextBox() then return end
     if LinoriaLib and LinoriaLib.IsPickingKey then return end
     if Config.UNLOAD_KEY and input.KeyCode == Config.UNLOAD_KEY then
         cleanup()

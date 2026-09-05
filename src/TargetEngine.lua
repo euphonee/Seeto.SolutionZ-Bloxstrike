@@ -57,6 +57,18 @@ function TargetEngine.init(Config)
 end
 
 function TargetEngine.update(Config, Utils, DamageEngine)
+    local isAimActive = (type(Config.isSilentAimActive) == "function") and Config.isSilentAimActive() or (Config.SILENT_AIM_ENABLED ~= false)
+    if not isAimActive then
+        Config.CurrentTargetChar = nil
+        Config.CurrentTargetPart = nil
+        Config.LockedTargetChar = nil
+        Config.WaitingForM1Release = false
+        if targetHighlight and targetHighlight.Enabled then
+            targetHighlight.Enabled = false
+        end
+        return nil, nil
+    end
+
     local vpCenter = Camera.ViewportSize * 0.5
     local charsFolder = Workspace:FindFirstChild("Characters")
     if not charsFolder then
@@ -248,7 +260,8 @@ function TargetEngine.update(Config, Utils, DamageEngine)
     end
 
     -- target part highlight
-    local canShowTargetHl = (Config.ESP_ENABLED ~= false) and Config.BODYPART_TARGET_HL
+    local isAimActive = (type(Config.isSilentAimActive) == "function") and Config.isSilentAimActive() or (Config.SILENT_AIM_ENABLED ~= false)
+    local canShowTargetHl = (Config.ESP_ENABLED ~= false) and Config.BODYPART_TARGET_HL and isAimActive
     if canShowTargetHl and Config.CurrentTargetPart and Config.CurrentTargetPart:IsDescendantOf(charsFolder) then
         if targetHighlight then
             if targetHighlight.Adornee ~= Config.CurrentTargetPart then

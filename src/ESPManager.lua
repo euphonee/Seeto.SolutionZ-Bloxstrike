@@ -85,7 +85,8 @@ function ESPManager.update(Config, Utils, SkeletonRenderer)
 
         seen[char] = true
 
-        local isTarget = (char == Config.CurrentTargetChar)
+        local isAimActive = (type(Config.isSilentAimActive) == "function") and Config.isSilentAimActive() or (Config.SILENT_AIM_ENABLED ~= false)
+        local isTarget = isAimActive and (Config.CurrentTargetChar ~= nil) and (char == Config.CurrentTargetChar)
         local baseColor
 
         if isTarget then
