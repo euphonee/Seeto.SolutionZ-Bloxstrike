@@ -14,7 +14,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Soluti
 
 ## Features
 
-- **Aim**: Angular FOV silent aim, lethal hitbox priority calculation, target lock.
+- **Aim**: Silent aim, aim FOV, infinite wallbang.
 - **Visuals**: 3D skeleton bone ESP, health indicators, view angle vectors, offscreen directional arrows, spectator monitor.
 - **Movement**: B-Hop.
 - **Skins**: Custom knife/skins.
