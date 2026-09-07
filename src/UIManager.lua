@@ -46,7 +46,7 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
 
     -- window
     local Window = Library:CreateWindow({
-        Title = "Seeto.SolutionZ / Bloxstrike / v2.1",
+        Title = "Seeto.SolutionZ / Bloxstrike / v2.2",
         Center = true,
         AutoShow = (Config.MENU_OPEN ~= false),
         TabPadding = 8,
@@ -91,6 +91,15 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
         Tooltip = "Auto: Lethal damage calculation and occlusion scanner\nHead: Strictly headshots\nTorso: Upper and lower torso\nRandom: Random visible hitbox",
         Callback = function(Value)
             updateSetting("TARGET_PRIORITY", Value)
+        end
+    })
+
+    AimMain:AddToggle("Wallbang", {
+        Text = "Infinite wall penetration",
+        Default = (Config.WALLBANG_ENABLED == true),
+        Tooltip = "Fabricates bullet hits through any wall. Requires silent aim to lock a target.",
+        Callback = function(Value)
+            updateSetting("WALLBANG_ENABLED", Value)
         end
     })
 
@@ -480,7 +489,7 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
     end)
     table.insert(UIManager.Connections, bindInputBegan)
 
-    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.1 Loaded!", 3)
+    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.2 Loaded!", 3)
 end
 
 function UIManager.cleanup()

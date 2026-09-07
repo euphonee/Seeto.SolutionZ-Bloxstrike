@@ -29,6 +29,7 @@ local Config = {
     BODYPART_TARGET_HL = true,
     BODYPART_HL_COLOR = Color3.fromRGB(255, 255, 0),
     TARGET_PRIORITY = "Auto",
+    WALLBANG_ENABLED = false,
 
     -- visuals
     ESP_ENABLED = true,
@@ -104,6 +105,7 @@ local DEFAULT_VALUES = {
     FOV_CIRCLE_TRANSPARENCY = 0.5,
     BODYPART_TARGET_HL = true,
     TARGET_PRIORITY = "Auto",
+    WALLBANG_ENABLED = false,
     ESP_ENABLED = true,
     SKELETON_ENABLED = true,
     VIEWANGLE_ENABLED = true,
@@ -162,7 +164,7 @@ pcall(function()
     InputController = require(game:GetService("ReplicatedStorage").Controllers.InputController)
 end)
 
--- query whether aim key is currently held down
+-- aim key held check
 function Config.isAimKeyHeld()
     local key = Config.TOGGLE_AIM_KEY
     if not key or key == "None" or key == "" then
@@ -184,14 +186,14 @@ function Config.isAimKeyHeld()
         end
     end
 
-    -- 3. Check KeyCode direct engine query
+    -- keycode
     if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
         if UserInputService:IsKeyDown(key) or (Config._keysDown[key] == true) or (Config._keysDown[key.Name] == true) then
             return true
         end
     end
 
-    -- 4. Check string key name
+    -- string key name
     if type(key) == "string" then
         local kc = Enum.KeyCode[key]
         if kc and UserInputService:IsKeyDown(kc) then
@@ -202,7 +204,7 @@ function Config.isAimKeyHeld()
         end
     end
 
-    -- 5. Check Bloxstrike InputController action states
+    -- InputController actions
     if InputController then
         local targetKc = (typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode) and key or (type(key) == "string" and Enum.KeyCode[key])
         if targetKc then
@@ -234,7 +236,7 @@ function Config.isAimKeyHeld()
     return false
 end
 
--- query whether silent aim should actively redirect shots right now
+-- silent aim active check
 function Config.isSilentAimActive()
     if UserInputService:GetFocusedTextBox() then
         return false

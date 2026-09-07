@@ -18,6 +18,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Soluti
 - **Visuals**: 3D skeleton bone ESP, health indicators, view angle vectors, offscreen directional arrows, spectator monitor.
 - **Movement**: B-Hop.
 - **Skins**: Custom knife/skins.
+- **Combat**: Wallbang (infinite wall penetration).
 - **Utilities**: Anti-Flash.
 - **Interface**: High-performance LinoriaLib GUI, customizable binds, auto-saving config.
 

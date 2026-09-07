@@ -1,4 +1,4 @@
--- Seeto.SolutionZ / Bloxstrike / v2.1
+-- Seeto.SolutionZ / Bloxstrike / v2.2
 
 -- cleanup existing instances
 if _G.__agScriptJanitor then pcall(_G.__agScriptJanitor) _G.__agScriptJanitor = nil end
@@ -78,6 +78,7 @@ local SkeletonRenderer = import("SkeletonRenderer")
 local TargetEngine     = import("TargetEngine")
 local ESPManager       = import("ESPManager")
 local SilentAim        = import("SilentAim")
+local Wallbang         = import("Wallbang")
 local SpectateChecker  = import("SpectateChecker")
 local Bhop             = import("Bhop")
 local AntiFlash        = import("AntiFlash")
@@ -106,6 +107,7 @@ fovCircle.Visible = Config.FOV_CIRCLE_ENABLED
 
 -- init subsystems
 SilentAim.init(Config)
+Wallbang.init(Config)
 Bhop.init(Config)
 AntiFlash.init(Config)
 SkinChanger.init(Config)
@@ -123,6 +125,7 @@ local function cleanup()
     AntiFlash.cleanup()
     SkinChanger.cleanup()
     SilentAim.cleanup()
+    Wallbang.cleanup()
     TargetEngine.cleanup()
     ESPManager.cleanup(SkeletonRenderer)
     SpectateChecker.cleanup()
@@ -171,5 +174,5 @@ keyConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("Seeto.SolutionZ / Bloxstrike / v2.1")
-return "Seeto.SolutionZ / Bloxstrike / v2.1"
+print("Seeto.SolutionZ / Bloxstrike / v2.2")
+return "Seeto.SolutionZ / Bloxstrike / v2.2"
