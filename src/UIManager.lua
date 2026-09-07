@@ -11,7 +11,12 @@ local UIManager = {
     Connections = {}
 }
 
-function UIManager.init(Config, Library, SkinChanger, unloadCallback)
+function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallback)
+    if type(WeaponEngine) == "function" and unloadCallback == nil then
+        unloadCallback = WeaponEngine
+        WeaponEngine = nil
+    end
+
     if UIManager.Initialized then return end
     UIManager.Initialized = true
     UIManager.Library = Library
@@ -46,7 +51,7 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
 
     -- window
     local Window = Library:CreateWindow({
-        Title = "Seeto.SolutionZ / Bloxstrike / v2.2",
+        Title = "Seeto.SolutionZ / Bloxstrike / v2.3",
         Center = true,
         AutoShow = (Config.MENU_OPEN ~= false),
         TabPadding = 8,
@@ -56,6 +61,7 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
 
     local Tabs = {
         Aim = Window:AddTab("Aim"),
+        Weapons = Window:AddTab("Weapons"),
         Visuals = Window:AddTab("Visuals"),
         Movement = Window:AddTab("Movement"),
         Skins = Window:AddTab("Skins"),
@@ -94,7 +100,46 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
         end
     })
 
-    AimMain:AddToggle("Wallbang", {
+    -- weapons tab
+    local WeaponFire = Tabs.Weapons:AddLeftGroupbox("Fire Rate & Trigger")
+    local WeaponPen = Tabs.Weapons:AddRightGroupbox("Penetration & Wallbang")
+
+    WeaponFire:AddToggle("CustomRpm", {
+        Text = "Custom fire rate (RPM)",
+        Default = (Config.CUSTOM_RPM_ENABLED == true),
+        Tooltip = "Overrides the fire rate for all equipped and database weapons",
+        Callback = function(Value)
+            updateSetting("CUSTOM_RPM_ENABLED", Value)
+            if WeaponEngine and WeaponEngine.sync then WeaponEngine.sync(Config) end
+        end
+    })
+
+    WeaponFire:AddSlider("RpmSlider", {
+        Text = "Fire rate (RPM)",
+        Default = Config.CUSTOM_RPM_VALUE or 600,
+        Min = 60,
+        Max = 3000,
+        Rounding = 0,
+        Compact = false,
+        Suffix = " RPM",
+        Tooltip = "Rounds per minute. Standard rifles: ~600-800 RPM. Rapid fire: 1500-3000 RPM.",
+        Callback = function(Value)
+            updateSetting("CUSTOM_RPM_VALUE", Value)
+            if WeaponEngine and WeaponEngine.sync then WeaponEngine.sync(Config) end
+        end
+    })
+
+    WeaponFire:AddToggle("ForceFullAuto", {
+        Text = "Force full auto",
+        Default = (Config.FORCE_FULL_AUTO == true),
+        Tooltip = "Converts all semi-automatic pistols, shotguns, and snipers to full-automatic",
+        Callback = function(Value)
+            updateSetting("FORCE_FULL_AUTO", Value)
+            if WeaponEngine and WeaponEngine.sync then WeaponEngine.sync(Config) end
+        end
+    })
+
+    WeaponPen:AddToggle("Wallbang", {
         Text = "Infinite wall penetration",
         Default = (Config.WALLBANG_ENABLED == true),
         Tooltip = "Fabricates bullet hits through any wall. Requires silent aim to lock a target.",
@@ -489,7 +534,7 @@ function UIManager.init(Config, Library, SkinChanger, unloadCallback)
     end)
     table.insert(UIManager.Connections, bindInputBegan)
 
-    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.2 Loaded!", 3)
+    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.3 Loaded!", 3)
 end
 
 function UIManager.cleanup()

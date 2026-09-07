@@ -1,4 +1,4 @@
--- Seeto.SolutionZ / Bloxstrike / v2.2
+-- Seeto.SolutionZ / Bloxstrike / v2.3
 
 -- cleanup existing instances
 if _G.__agScriptJanitor then pcall(_G.__agScriptJanitor) _G.__agScriptJanitor = nil end
@@ -83,6 +83,7 @@ local SpectateChecker  = import("SpectateChecker")
 local Bhop             = import("Bhop")
 local AntiFlash        = import("AntiFlash")
 local SkinChanger      = import("SkinChanger")
+local WeaponEngine     = import("WeaponEngine")
 local LinoriaLib       = import("LinoriaLib")
 local UIManager        = import("UIManager")
 
@@ -111,6 +112,7 @@ Wallbang.init(Config)
 Bhop.init(Config)
 AntiFlash.init(Config)
 SkinChanger.init(Config)
+WeaponEngine.init(Config)
 
 -- cleanup
 local renderConn = nil
@@ -121,6 +123,7 @@ local function cleanup()
     if keyConn then pcall(function() keyConn:Disconnect() end) end
     
     UIManager.cleanup()
+    WeaponEngine.cleanup()
     Bhop.cleanup()
     AntiFlash.cleanup()
     SkinChanger.cleanup()
@@ -138,7 +141,7 @@ end
 _G.__bloxstrikeJanitor = cleanup
 
 -- init ui
-UIManager.init(Config, LinoriaLib, SkinChanger, cleanup)
+UIManager.init(Config, LinoriaLib, SkinChanger, WeaponEngine, cleanup)
 
 -- render loop
 renderConn = RunService.RenderStepped:Connect(function(dt)
@@ -174,5 +177,5 @@ keyConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("Seeto.SolutionZ / Bloxstrike / v2.2")
-return "Seeto.SolutionZ / Bloxstrike / v2.2"
+print("Seeto.SolutionZ / Bloxstrike / v2.3")
+return "Seeto.SolutionZ / Bloxstrike / v2.3"

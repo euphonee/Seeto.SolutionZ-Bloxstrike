@@ -14,11 +14,11 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Soluti
 
 ## Features
 
-- **Aim**: Silent aim, aim FOV, infinite wallbang.
+- **Aim**: Angular FOV silent aim, lethal hitbox priority calculation, target lock.
+- **Weapons**: Custom fire rate (RPM), force full-auto, infinite wall penetration.
 - **Visuals**: 3D skeleton bone ESP, health indicators, view angle vectors, offscreen directional arrows, spectator monitor.
 - **Movement**: B-Hop.
 - **Skins**: Custom knife/skins.
-- **Combat**: Wallbang (infinite wall penetration).
 - **Utilities**: Anti-Flash.
 - **Interface**: High-performance LinoriaLib GUI, customizable binds, auto-saving config.
 

@@ -20,11 +20,11 @@ end
 local Config = {
     -- aim
     SILENT_AIM_ENABLED = true,
-    KEEP_TARGET_LOCK = true,
-    FOV_DEG = 30,
+    KEEP_TARGET_LOCK = false,
+    FOV_DEG = 12,
     FALLOFF_REF = 500,
     FOV_CIRCLE_ENABLED = true,
-    FOV_CIRCLE_TRANSPARENCY = 0.5,
+    FOV_CIRCLE_TRANSPARENCY = 0.36,
     FOV_CIRCLE_COLOR = Color3.fromRGB(255, 255, 255),
     BODYPART_TARGET_HL = true,
     BODYPART_HL_COLOR = Color3.fromRGB(255, 255, 0),
@@ -41,7 +41,7 @@ local Config = {
     OFFSCREEN_ARROW_SIZE = 13,
     OFFSCREEN_ARROW_MAX_DIST = 350,
     OFFSCREEN_ARROW_FADE_DIST = 80,
-    DISABLE_TEAMMATES = false,
+    DISABLE_TEAMMATES = true,
     OCCLUSION_CHECK_ENABLED = true,
     OCCLUDED_COLOR_FACTOR = 0.45,
     SPECTATE_CHECKER_ENABLED = true,
@@ -51,7 +51,12 @@ local Config = {
 
     -- utilities
     ANTI_FLASH_ENABLED = true,
-    ANTI_FLASH_TRANSPARENCY = 0.85,
+    ANTI_FLASH_TRANSPARENCY = 0.29,
+
+    -- weapons
+    CUSTOM_RPM_ENABLED = false,
+    CUSTOM_RPM_VALUE = 1491,
+    FORCE_FULL_AUTO = false,
 
     -- skins
     SKINS_ENABLED = true,
@@ -99,10 +104,10 @@ local Config = {
 -- defaults
 local DEFAULT_VALUES = {
     SILENT_AIM_ENABLED = true,
-    KEEP_TARGET_LOCK = true,
-    FOV_DEG = 30,
+    KEEP_TARGET_LOCK = false,
+    FOV_DEG = 12,
     FOV_CIRCLE_ENABLED = true,
-    FOV_CIRCLE_TRANSPARENCY = 0.5,
+    FOV_CIRCLE_TRANSPARENCY = 0.36,
     BODYPART_TARGET_HL = true,
     TARGET_PRIORITY = "Auto",
     WALLBANG_ENABLED = false,
@@ -110,12 +115,15 @@ local DEFAULT_VALUES = {
     SKELETON_ENABLED = true,
     VIEWANGLE_ENABLED = true,
     OFFSCREEN_ARROWS = true,
-    DISABLE_TEAMMATES = false,
+    DISABLE_TEAMMATES = true,
     OCCLUSION_CHECK_ENABLED = true,
     SPECTATE_CHECKER_ENABLED = true,
     BHOP_ENABLED = true,
     ANTI_FLASH_ENABLED = true,
-    ANTI_FLASH_TRANSPARENCY = 0.85,
+    ANTI_FLASH_TRANSPARENCY = 0.29,
+    CUSTOM_RPM_ENABLED = false,
+    CUSTOM_RPM_VALUE = 1491,
+    FORCE_FULL_AUTO = false,
     SKINS_ENABLED = true,
     KNIFE_MODEL = "Butterfly Knife",
     SKIN_MODE = "Special",
@@ -278,6 +286,10 @@ function Config.save()
 
         ANTI_FLASH_ENABLED = Config.ANTI_FLASH_ENABLED,
         ANTI_FLASH_TRANSPARENCY = Config.ANTI_FLASH_TRANSPARENCY,
+
+        CUSTOM_RPM_ENABLED = Config.CUSTOM_RPM_ENABLED,
+        CUSTOM_RPM_VALUE = Config.CUSTOM_RPM_VALUE,
+        FORCE_FULL_AUTO = Config.FORCE_FULL_AUTO,
 
         SKINS_ENABLED = Config.SKINS_ENABLED,
         KNIFE_MODEL = Config.KNIFE_MODEL or "Butterfly Knife",
