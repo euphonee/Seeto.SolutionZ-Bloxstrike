@@ -1,4 +1,4 @@
--- Seeto.SolutionZ / Bloxstrike / v2.4
+-- Seeto.SolutionZ / Bloxstrike / v2.5
 
 -- cleanup existing instances
 if _G.__agScriptJanitor then pcall(_G.__agScriptJanitor) _G.__agScriptJanitor = nil end
@@ -202,5 +202,5 @@ keyConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("Seeto.SolutionZ / Bloxstrike / v2.4")
-return "Seeto.SolutionZ / Bloxstrike / v2.4"
+print("Seeto.SolutionZ / Bloxstrike / v2.5")
+return "Seeto.SolutionZ / Bloxstrike / v2.5"

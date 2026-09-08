@@ -52,7 +52,7 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
 
     -- window
     local Window = Library:CreateWindow({
-        Title = "Seeto.SolutionZ / Bloxstrike / v2.4",
+        Title = "Seeto.SolutionZ / Bloxstrike / v2.5",
         Center = true,
         AutoShow = (Config.MENU_OPEN ~= false),
         TabPadding = 6,
@@ -610,7 +610,7 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
         end
     end)
 
-    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.4 Loaded!", 3)
+    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.5 Loaded!", 3)
 end
 
 function UIManager.cleanup()
