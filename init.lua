@@ -82,7 +82,6 @@ local Wallbang         = import("Wallbang")
 local SpectateChecker  = import("SpectateChecker")
 local Bhop             = import("Bhop")
 local AntiFlash        = import("AntiFlash")
-local SkinChanger      = import("SkinChanger")
 local WeaponEngine     = import("WeaponEngine")
 local LinoriaLib       = import("LinoriaLib")
 local UIManager        = import("UIManager")
@@ -111,7 +110,6 @@ SilentAim.init(Config)
 Wallbang.init(Config)
 Bhop.init(Config)
 AntiFlash.init(Config)
-SkinChanger.init(Config)
 WeaponEngine.init(Config)
 
 -- cleanup
@@ -126,7 +124,6 @@ local function cleanup()
     WeaponEngine.cleanup()
     Bhop.cleanup()
     AntiFlash.cleanup()
-    SkinChanger.cleanup()
     SilentAim.cleanup()
     Wallbang.cleanup()
     TargetEngine.cleanup()
@@ -141,7 +138,7 @@ end
 _G.__bloxstrikeJanitor = cleanup
 
 -- init ui
-UIManager.init(Config, LinoriaLib, SkinChanger, WeaponEngine, cleanup)
+UIManager.init(Config, LinoriaLib, nil, WeaponEngine, cleanup)
 
 -- render loop
 renderConn = RunService.RenderStepped:Connect(function(dt)
