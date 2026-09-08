@@ -1,4 +1,5 @@
 -- ui manager
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 
@@ -148,12 +149,31 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
     })
 
     WeaponPen:AddToggle("Wallbang", {
-        Text = "Infinite wall penetration",
+        Text = "Infinite wallbang",
         Default = (Config.WALLBANG_ENABLED == true),
         Tooltip = "Fabricates bullet hits through any wall. Requires silent aim to lock a target.",
         Callback = function(Value)
             updateSetting("WALLBANG_ENABLED", Value)
         end
+    })
+
+    WeaponPen:AddButton({
+        Text = "Set all default",
+        Func = function()
+            if Toggles.CustomRpm then Toggles.CustomRpm:SetValue(false) end
+            if Options.RpmSlider then Options.RpmSlider:SetValue(1491) end
+            if Toggles.ForceFullAuto then Toggles.ForceFullAuto:SetValue(false) end
+            if Toggles.Wallbang then Toggles.Wallbang:SetValue(false) end
+            updateSetting("CUSTOM_RPM_ENABLED", false)
+            updateSetting("CUSTOM_RPM_VALUE", 1491)
+            updateSetting("FORCE_FULL_AUTO", false)
+            updateSetting("WALLBANG_ENABLED", false)
+            if WeaponEngine and WeaponEngine.sync then WeaponEngine.sync(Config) end
+            queueAutoSave()
+            Library:Notify("Weapon modifiers reset to defaults", 2)
+        end,
+        DoubleClick = false,
+        Tooltip = "Resets all weapon modifiers (RPM, Full Auto, Wallbang) to factory defaults"
     })
 
     -- visuals tab
@@ -302,42 +322,201 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
     })
 
     -- skins tab
-    local SkinsMain = Tabs.Skins:AddLeftGroupbox("Knife & Skin Settings")
-    local SkinsActions = Tabs.Skins:AddRightGroupbox("Actions & Presets")
+    local function getKnifeSkinList(knifeModel)
+        if not knifeModel or knifeModel == "Default" then
+            return { "Default" }
+        end
 
-    SkinsMain:AddToggle("CustomPresets", {
-        Text = "Enable skins",
-        Default = (Config.SKINS_ENABLED ~= false),
-        Tooltip = "Enables custom viewmodel skins and knife model overrides",
+        local list = { "Special", "Random" }
+        local skinsFolder = ReplicatedStorage:FindFirstChild("Assets")
+        if skinsFolder then skinsFolder = skinsFolder:FindFirstChild("Skins") end
+        local folder = skinsFolder and skinsFolder:FindFirstChild(knifeModel)
+
+        if folder then
+            local names = {}
+            for _, child in ipairs(folder:GetChildren()) do
+                table.insert(names, child.Name)
+            end
+            table.sort(names, function(a, b)
+                if a == "Vanilla" or a == "Stock" then return true end
+                if b == "Vanilla" or b == "Stock" then return false end
+                return a:lower() < b:lower()
+            end)
+            for _, name in ipairs(names) do
+                table.insert(list, name)
+            end
+        else
+            table.insert(list, "Fade")
+        end
+
+        return list
+    end
+
+    local function getWeaponSkinList(weaponName)
+        if not weaponName then
+            return { "Special", "Random", "Stock" }
+        end
+
+        local list = { "Special", "Random", "Stock" }
+        local skinsFolder = ReplicatedStorage:FindFirstChild("Assets")
+        if skinsFolder then skinsFolder = skinsFolder:FindFirstChild("Skins") end
+        local folder = skinsFolder and skinsFolder:FindFirstChild(weaponName)
+
+        if folder then
+            local names = {}
+            for _, child in ipairs(folder:GetChildren()) do
+                if child.Name ~= "Stock" and child.Name ~= "Vanilla" and not child.Name:find("PATTERN") and child.Name ~= "Terrorists" and child.Name ~= "Counter-Terrorists" then
+                    table.insert(names, child.Name)
+                end
+            end
+            table.sort(names, function(a, b)
+                return a:lower() < b:lower()
+            end)
+            for _, name in ipairs(names) do
+                table.insert(list, name)
+            end
+        end
+
+        return list
+    end
+
+    local knifeModels = { "Default", "Butterfly Knife", "Karambit", "M9 Bayonet", "Skeleton Knife", "Stiletto Knife", "Flip Knife", "Gut Knife", "LightSaber", "CT Knife", "T Knife" }
+    local weaponTypesList = {
+        "AK-47", "AUG", "AWP", "Desert Eagle", "Dual Berettas",
+        "FAMAS", "Five-SeveN", "Galil AR", "Glock-18", "M4A1-S",
+        "M4A4", "MAC-10", "MAG-7", "MP9", "Negev",
+        "Nova", "P250", "P90", "R8 Revolver", "SG 553",
+        "SSG 08", "Sawed-Off", "Tec-9", "USP-S", "XM1014", "Zeus x27"
+    }
+
+    local KnifeGroup = Tabs.Skins:AddLeftGroupbox("Knife Customization")
+    local WeaponGroup = Tabs.Skins:AddRightGroupbox("Weapon Customization")
+
+    KnifeGroup:AddToggle("KnifeChanger", {
+        Text = "Enable knife changer",
+        Default = (Config.KNIFE_SKINS_ENABLED ~= false),
+        Tooltip = "Enables custom knife model replacement and skin overrides",
         Callback = function(Value)
-            updateSetting("SKINS_ENABLED", Value)
-            Config.CUSTOM_PRESETS = Value
+            updateSetting("KNIFE_SKINS_ENABLED", Value)
+            Config.CUSTOM_PRESETS = Value or (Config.WEAPON_SKINS_ENABLED ~= false)
             if SkinChanger and SkinChanger.refreshActiveViewmodels then
                 SkinChanger.refreshActiveViewmodels(Config)
             end
         end
     })
 
-    SkinsMain:AddDropdown("KnifeModel", {
-        Values = { "Default", "Butterfly Knife", "Karambit", "M9 Bayonet", "Skeleton Knife", "Stiletto Knife", "Flip Knife", "Gut Knife", "LightSaber" },
+    KnifeGroup:AddDropdown("KnifeModel", {
+        Values = knifeModels,
         Default = Config.KNIFE_MODEL or "Butterfly Knife",
         Multi = false,
         Text = "Knife model",
         Tooltip = "Select custom knife model replacement for slot 3",
         Callback = function(Value)
             updateSetting("KNIFE_MODEL", Value)
+            if Options.KnifeSkin then
+                local newSkinList = getKnifeSkinList(Value)
+                Options.KnifeSkin:SetValues(newSkinList)
+                local curSkin = Config.KNIFE_SKIN or "Special"
+                local found = false
+                for _, s in ipairs(newSkinList) do
+                    if s == curSkin then found = true break end
+                end
+                if not found then
+                    local fallback = (Value == "Default") and "Default" or "Special"
+                    Options.KnifeSkin:SetValue(fallback)
+                    updateSetting("KNIFE_SKIN", fallback)
+                end
+            end
             if SkinChanger and SkinChanger.refreshActiveViewmodels then
                 SkinChanger.refreshActiveViewmodels(Config)
             end
         end
     })
 
-    SkinsMain:AddDropdown("SkinMode", {
+    local initialKnifeSkins = getKnifeSkinList(Config.KNIFE_MODEL or "Butterfly Knife")
+    KnifeGroup:AddDropdown("KnifeSkin", {
+        Values = initialKnifeSkins,
+        Default = Config.KNIFE_SKIN or "Special",
+        Multi = false,
+        Text = "Knife skin",
+        Tooltip = "Select specific skin for the chosen knife model, or Special / Random",
+        Callback = function(Value)
+            updateSetting("KNIFE_SKIN", Value)
+            if SkinChanger then
+                if Value == "Random" and SkinChanger.rerollRandomSkins then
+                    SkinChanger.rerollRandomSkins(Config)
+                elseif SkinChanger.refreshActiveViewmodels then
+                    SkinChanger.refreshActiveViewmodels(Config)
+                end
+            end
+        end
+    })
+
+    WeaponGroup:AddToggle("WeaponChanger", {
+        Text = "Enable weapon skins",
+        Default = (Config.WEAPON_SKINS_ENABLED ~= false),
+        Tooltip = "Enables custom viewmodel skins for guns and firearms",
+        Callback = function(Value)
+            updateSetting("WEAPON_SKINS_ENABLED", Value)
+            Config.CUSTOM_PRESETS = Value or (Config.KNIFE_SKINS_ENABLED ~= false)
+            if SkinChanger and SkinChanger.refreshActiveViewmodels then
+                SkinChanger.refreshActiveViewmodels(Config)
+            end
+        end
+    })
+
+    local curWeaponType = Config.SELECTED_WEAPON_TYPE or "AK-47"
+    local initialWeaponSaved = (Config.SELECTED_SKINS and Config.SELECTED_SKINS[curWeaponType]) or "Special"
+    local initialWeaponSkin = (type(initialWeaponSaved) == "table" and initialWeaponSaved.Skin) or initialWeaponSaved or "Special"
+
+    WeaponGroup:AddDropdown("WeaponType", {
+        Values = weaponTypesList,
+        Default = curWeaponType,
+        Multi = false,
+        Text = "Select weapon",
+        Tooltip = "Choose the weapon type to configure skins for",
+        Callback = function(Value)
+            updateSetting("SELECTED_WEAPON_TYPE", Value)
+            if Options.WeaponSkin then
+                local newSkins = getWeaponSkinList(Value)
+                Options.WeaponSkin:SetValues(newSkins)
+                local saved = Config.SELECTED_SKINS and Config.SELECTED_SKINS[Value]
+                local targetSkin = (type(saved) == "table" and saved.Skin) or saved or "Special"
+                local found = false
+                for _, s in ipairs(newSkins) do
+                    if s == targetSkin then found = true break end
+                end
+                if not found then targetSkin = "Special" end
+                Options.WeaponSkin:SetValue(targetSkin)
+            end
+        end
+    })
+
+    WeaponGroup:AddDropdown("WeaponSkin", {
+        Values = getWeaponSkinList(curWeaponType),
+        Default = initialWeaponSkin,
+        Multi = false,
+        Text = "Weapon skin",
+        Tooltip = "Choose a skin from this weapon's library, or Special / Random / Stock",
+        Callback = function(Value)
+            local targetWp = (Options.WeaponType and Options.WeaponType.Value) or Config.SELECTED_WEAPON_TYPE or "AK-47"
+            if not Config.SELECTED_SKINS then Config.SELECTED_SKINS = {} end
+            Config.SELECTED_SKINS[targetWp] = Value
+            queueAutoSave()
+            if Value == "Random" and SkinChanger and SkinChanger.rerollRandomSkins then
+                SkinChanger.rerollRandomSkins(Config)
+            elseif SkinChanger and SkinChanger.refreshActiveViewmodels then
+                SkinChanger.refreshActiveViewmodels(Config)
+            end
+        end
+    })
+
+    WeaponGroup:AddDropdown("SkinMode", {
         Values = { "Special", "Random" },
         Default = (Config.SKIN_MODE == "Random") and "Random" or "Special",
         Multi = false,
-        Text = "Skin selection",
-        Tooltip = "Special: Applies top-tier Special & Covert skins (Fade, Lore, Midas, etc.)\nRandom: Automatically randomizes all skins every new round",
+        Text = "Fallback / Global mode",
+        Tooltip = "Default skin mode applied to any weapons without an individual skin selection",
         Callback = function(Value)
             updateSetting("SKIN_MODE", Value)
             if SkinChanger then
@@ -350,7 +529,69 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
         end
     })
 
-    SkinsActions:AddButton({
+    WeaponGroup:AddButton({
+        Text = "Set all Special",
+        Func = function()
+            if not Config.SELECTED_SKINS then Config.SELECTED_SKINS = {} end
+            for _, wpName in ipairs(weaponTypesList) do
+                Config.SELECTED_SKINS[wpName] = "Special"
+            end
+            Config.SKIN_MODE = "Special"
+            if Options.WeaponSkin then Options.WeaponSkin:SetValue("Special") end
+            if Options.SkinMode then Options.SkinMode:SetValue("Special") end
+            queueAutoSave()
+            if SkinChanger and SkinChanger.refreshActiveViewmodels then
+                SkinChanger.refreshActiveViewmodels(Config)
+            end
+            Library:Notify("Set all weapon skins to Special", 2)
+        end,
+        DoubleClick = false,
+        Tooltip = "Sets every weapon's skin configuration to Special"
+    })
+
+    WeaponGroup:AddButton({
+        Text = "Set all Random",
+        Func = function()
+            if not Config.SELECTED_SKINS then Config.SELECTED_SKINS = {} end
+            for _, wpName in ipairs(weaponTypesList) do
+                Config.SELECTED_SKINS[wpName] = "Random"
+            end
+            Config.SKIN_MODE = "Random"
+            if Options.WeaponSkin then Options.WeaponSkin:SetValue("Random") end
+            if Options.SkinMode then Options.SkinMode:SetValue("Random") end
+            queueAutoSave()
+            if SkinChanger then
+                if SkinChanger.rerollRandomSkins then
+                    SkinChanger.rerollRandomSkins(Config)
+                elseif SkinChanger.refreshActiveViewmodels then
+                    SkinChanger.refreshActiveViewmodels(Config)
+                end
+            end
+            Library:Notify("Set all weapon skins to Random", 2)
+        end,
+        DoubleClick = false,
+        Tooltip = "Sets every weapon's skin configuration to Random"
+    })
+
+    WeaponGroup:AddButton({
+        Text = "Set all Default",
+        Func = function()
+            if not Config.SELECTED_SKINS then Config.SELECTED_SKINS = {} end
+            for _, wpName in ipairs(weaponTypesList) do
+                Config.SELECTED_SKINS[wpName] = "Stock"
+            end
+            if Options.WeaponSkin then Options.WeaponSkin:SetValue("Stock") end
+            queueAutoSave()
+            if SkinChanger and SkinChanger.refreshActiveViewmodels then
+                SkinChanger.refreshActiveViewmodels(Config)
+            end
+            Library:Notify("Set all weapon skins to default", 2)
+        end,
+        DoubleClick = false,
+        Tooltip = "Sets every weapon to its default/stock appearance"
+    })
+
+    WeaponGroup:AddButton({
         Text = "Refresh viewmodels",
         Func = function()
             if SkinChanger and SkinChanger.refreshActiveViewmodels then
@@ -361,8 +602,6 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
         DoubleClick = false,
         Tooltip = "Re-applies custom weapon skins and viewmodel rigs"
     })
-
-    SkinsActions:AddLabel("Random skins automatically cycle at the start of every new round.", true)
 
     -- settings tab
     local MenuGroup = Tabs.Settings:AddLeftGroupbox("Keybinds")
@@ -467,8 +706,12 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
             if Options.FlashOpacity then Options.FlashOpacity:SetValue(math.floor((Config.ANTI_FLASH_TRANSPARENCY or 0.85) * 100)) end
 
             if Toggles.Bhop then Toggles.Bhop:SetValue(Config.BHOP_ENABLED) end
-            if Toggles.CustomPresets then Toggles.CustomPresets:SetValue(Config.SKINS_ENABLED) end
+            if Toggles.KnifeChanger then Toggles.KnifeChanger:SetValue(Config.KNIFE_SKINS_ENABLED ~= false) end
+            if Toggles.WeaponChanger then Toggles.WeaponChanger:SetValue(Config.WEAPON_SKINS_ENABLED ~= false) end
             if Options.KnifeModel then Options.KnifeModel:SetValue(Config.KNIFE_MODEL or "Butterfly Knife") end
+            if Options.KnifeSkin then Options.KnifeSkin:SetValue(Config.KNIFE_SKIN or "Special") end
+            if Options.WeaponType then Options.WeaponType:SetValue("AK-47") end
+            if Options.WeaponSkin then Options.WeaponSkin:SetValue("Special") end
             if Options.SkinMode then Options.SkinMode:SetValue(Config.SKIN_MODE or "Special") end
 
             if Options.MenuKeybind then Options.MenuKeybind:SetValue("Insert") end
@@ -545,13 +788,41 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
             if Toggles.EspMaster and Toggles.EspMaster.Value ~= nextState then
                 Toggles.EspMaster:SetValue(nextState)
             end
-        elseif Config.TOGGLE_UI_KEY_ALT and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Config.TOGGLE_UI_KEY_ALT then
-            if Window and Window.Holder then
-                Window.Holder.Visible = not Window.Holder.Visible
-            end
         end
     end)
     table.insert(UIManager.Connections, bindInputBegan)
+
+    -- block in-game weapon switching while menu is open
+    pcall(function()
+        local InventoryController = require(ReplicatedStorage.Controllers.InventoryController)
+        if InventoryController then
+            if not _G.__originalInventoryEquip then
+                _G.__originalInventoryEquip = InventoryController.equip
+            end
+            local origEquip = _G.__originalInventoryEquip
+
+            if not _G.__originalInventoryEquipLocal then
+                _G.__originalInventoryEquipLocal = InventoryController.equipLocal
+            end
+            local origEquipLocal = _G.__originalInventoryEquipLocal
+
+            InventoryController.equip = function(slot, index, ...)
+                if Library and Library.Toggled then
+                    return
+                end
+                return origEquip(slot, index, ...)
+            end
+
+            if origEquipLocal then
+                InventoryController.equipLocal = function(slot, index, ...)
+                    if Library and Library.Toggled then
+                        return
+                    end
+                    return origEquipLocal(slot, index, ...)
+                end
+            end
+        end
+    end)
 
     Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.4 Loaded!", 3)
 end
@@ -561,6 +832,20 @@ function UIManager.cleanup()
         pcall(function() c:Disconnect() end)
     end
     UIManager.Connections = {}
+
+    pcall(function()
+        local InventoryController = require(ReplicatedStorage.Controllers.InventoryController)
+        if InventoryController then
+            if _G.__originalInventoryEquip then
+                InventoryController.equip = _G.__originalInventoryEquip
+                _G.__originalInventoryEquip = nil
+            end
+            if _G.__originalInventoryEquipLocal then
+                InventoryController.equipLocal = _G.__originalInventoryEquipLocal
+                _G.__originalInventoryEquipLocal = nil
+            end
+        end
+    end)
 
     local Library = UIManager.Library
     if Library and Library.Unload then

@@ -60,10 +60,14 @@ local Config = {
 
     -- skins
     SKINS_ENABLED = true,
+    KNIFE_SKINS_ENABLED = true,
+    WEAPON_SKINS_ENABLED = true,
     KNIFE_MODEL = "Butterfly Knife",
+    KNIFE_SKIN = "Special",
+    SELECTED_WEAPON_TYPE = "AK-47",
+    SELECTED_SKINS = {},
     SKIN_MODE = "Special",
     EQUIP_BUTTERFLY_KNIFE = true,
-    SELECTED_SKINS = {},
 
     -- keybinds
     TOGGLE_UI_KEY = Enum.KeyCode.Insert,
@@ -127,7 +131,12 @@ local DEFAULT_VALUES = {
     CUSTOM_RPM_VALUE = 1491,
     FORCE_FULL_AUTO = false,
     SKINS_ENABLED = true,
+    KNIFE_SKINS_ENABLED = true,
+    WEAPON_SKINS_ENABLED = true,
     KNIFE_MODEL = "Butterfly Knife",
+    KNIFE_SKIN = "Special",
+    SELECTED_WEAPON_TYPE = "AK-47",
+    SELECTED_SKINS = {},
     SKIN_MODE = "Special",
     EQUIP_BUTTERFLY_KNIFE = true,
     WINDOW_SIZE_X = 440,
@@ -297,7 +306,12 @@ function Config.save()
         FORCE_FULL_AUTO = Config.FORCE_FULL_AUTO,
 
         SKINS_ENABLED = Config.SKINS_ENABLED,
+        KNIFE_SKINS_ENABLED = Config.KNIFE_SKINS_ENABLED,
+        WEAPON_SKINS_ENABLED = Config.WEAPON_SKINS_ENABLED,
         KNIFE_MODEL = Config.KNIFE_MODEL or "Butterfly Knife",
+        KNIFE_SKIN = Config.KNIFE_SKIN or "Special",
+        SELECTED_WEAPON_TYPE = Config.SELECTED_WEAPON_TYPE or "AK-47",
+        SELECTED_SKINS = Config.SELECTED_SKINS or {},
         SKIN_MODE = Config.SKIN_MODE or "Special",
         EQUIP_BUTTERFLY_KNIFE = Config.EQUIP_BUTTERFLY_KNIFE,
 
@@ -362,8 +376,18 @@ function Config.load()
             end
         elseif key == "AIM_BIND_MODE" then
             Config.AIM_BIND_MODE = (val == "Hold") and "Hold" or "Toggle"
+        elseif key == "KNIFE_SKINS_ENABLED" then
+            Config.KNIFE_SKINS_ENABLED = (val == true)
+        elseif key == "WEAPON_SKINS_ENABLED" then
+            Config.WEAPON_SKINS_ENABLED = (val == true)
+        elseif key == "SELECTED_WEAPON_TYPE" then
+            Config.SELECTED_WEAPON_TYPE = tostring(val)
+        elseif key == "SELECTED_SKINS" and type(val) == "table" then
+            Config.SELECTED_SKINS = val
         elseif key == "KNIFE_MODEL" then
             Config.KNIFE_MODEL = tostring(val)
+        elseif key == "KNIFE_SKIN" then
+            Config.KNIFE_SKIN = tostring(val)
         elseif key == "SKIN_MODE" then
             local str = tostring(val)
             Config.SKIN_MODE = (str == "Random") and "Random" or "Special"

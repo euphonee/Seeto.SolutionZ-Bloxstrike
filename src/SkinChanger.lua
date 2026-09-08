@@ -115,14 +115,14 @@ end
 -- knife model and skin resolver
 function SkinChanger.getKnifeSelection(Config)
     local targetKnife = (Config and Config.KNIFE_MODEL) or "Butterfly Knife"
-    if targetKnife == "Default" or targetKnife == "Vanilla" then
+    if targetKnife == "Default" then
         return nil, nil
     end
 
-    local skinMode = (Config and Config.SKIN_MODE) or "Special"
+    local skinSelection = (Config and Config.KNIFE_SKIN) or "Special"
     local skinName = "Fade"
 
-    if skinMode == "Random" then
+    if skinSelection == "Random" then
         if not SkinChanger.RandomCache[targetKnife] then
             local folder = SkinsFolder and SkinsFolder:FindFirstChild(targetKnife)
             if folder then
@@ -142,8 +142,15 @@ function SkinChanger.getKnifeSelection(Config)
             end
         end
         skinName = SkinChanger.RandomCache[targetKnife]
-    else
+    elseif skinSelection == "Special" then
         skinName = SkinChanger.TopTierSkins[targetKnife] or "Fade"
+    else
+        local folder = SkinsFolder and SkinsFolder:FindFirstChild(targetKnife)
+        if folder and folder:FindFirstChild(skinSelection) then
+            skinName = skinSelection
+        else
+            skinName = SkinChanger.TopTierSkins[targetKnife] or "Fade"
+        end
     end
 
     return targetKnife, skinName
@@ -154,6 +161,38 @@ function SkinChanger.getValidSkin(weaponName, Config)
     if not SkinsFolder or not weaponName or isExemptUtility(weaponName) then return nil end
     local folder = SkinsFolder:FindFirstChild(weaponName)
     if not folder then return nil end
+
+    local custom = (Config and Config.SELECTED_SKINS and Config.SELECTED_SKINS[weaponName]) or SkinChanger.SelectedSkins[weaponName]
+    local customSkinName = type(custom) == "table" and custom.Skin or custom
+
+    if customSkinName then
+        if customSkinName == "Stock" or customSkinName == "Default" or customSkinName == "Vanilla" then
+            return nil
+        elseif customSkinName == "Special" then
+            local pref = SkinChanger.TopTierSkins[weaponName]
+            if pref and folder:FindFirstChild(pref) then
+                return pref, "Factory New"
+            end
+        elseif customSkinName == "Random" then
+            if not SkinChanger.RandomCache[weaponName] then
+                local validSkins = {}
+                for _, s in ipairs(folder:GetChildren()) do
+                    if s.Name ~= "Stock" and s.Name ~= "Vanilla" and not s.Name:find("PATTERN") and s.Name ~= "Terrorists" and s.Name ~= "Counter-Terrorists" then
+                        table.insert(validSkins, s.Name)
+                    end
+                end
+                if #validSkins > 0 then
+                    SkinChanger.RandomCache[weaponName] = validSkins[math.random(1, #validSkins)]
+                else
+                    SkinChanger.RandomCache[weaponName] = "Stock"
+                end
+            end
+            return SkinChanger.RandomCache[weaponName], "Factory New"
+        elseif folder:FindFirstChild(customSkinName) then
+            local wear = (type(custom) == "table" and custom.Wear) or "Factory New"
+            return customSkinName, wear
+        end
+    end
 
     local skinMode = (Config and Config.SKIN_MODE) or "Special"
 
@@ -172,13 +211,6 @@ function SkinChanger.getValidSkin(weaponName, Config)
             end
         end
         return SkinChanger.RandomCache[weaponName], "Factory New"
-    end
-
-    local custom = (Config and Config.SELECTED_SKINS and Config.SELECTED_SKINS[weaponName]) or SkinChanger.SelectedSkins[weaponName]
-    if custom and folder:FindFirstChild(custom.Skin or custom) then
-        local skinName = custom.Skin or custom
-        local wear = custom.Wear or "Factory New"
-        return skinName, wear
     end
 
     local pref = SkinChanger.TopTierSkins[weaponName]
@@ -239,13 +271,27 @@ end
 function SkinChanger.refreshActiveViewmodels(Config)
     if not isViewingLocalPlayer() then return end
 
+    local knifeEnabled = (Config.KNIFE_SKINS_ENABLED ~= false and Config.SKINS_ENABLED ~= false and Config.CUSTOM_PRESETS ~= false)
+    local weaponEnabled = (Config.WEAPON_SKINS_ENABLED ~= false and Config.SKINS_ENABLED ~= false and Config.CUSTOM_PRESETS ~= false)
+
     for _, child in ipairs(Camera:GetChildren()) do
         if child:IsA("Model") and (child:FindFirstChild("Weapon") or child:FindFirstChild("WeaponL") or child:FindFirstChild("WeaponR")) then
             local weaponName = child.Name
             if not isExemptUtility(weaponName) then
-                local skinName, wear = SkinChanger.getValidSkin(weaponName, Config)
-                if skinName then
-                    SkinChanger.applySkinToViewModel(child, weaponName, skinName, wear)
+                if isKnife(weaponName) then
+                    if knifeEnabled then
+                        local targetKnife, knifeSkin = SkinChanger.getKnifeSelection(Config)
+                        if targetKnife and knifeSkin and weaponName == targetKnife then
+                            SkinChanger.applySkinToViewModel(child, targetKnife, knifeSkin, "Factory New")
+                        end
+                    end
+                else
+                    if weaponEnabled then
+                        local skinName, wear = SkinChanger.getValidSkin(weaponName, Config)
+                        if skinName then
+                            SkinChanger.applySkinToViewModel(child, weaponName, skinName, wear)
+                        end
+                    end
                 end
             end
         end
@@ -277,8 +323,8 @@ function SkinChanger.init(Config)
 
     -- knife component hook
     WeaponComponent.new = function(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ...)
-        local enabled = (Config.CUSTOM_PRESETS ~= false and Config.SKINS_ENABLED ~= false)
-        if not enabled or p1 ~= LocalPlayer or not isLocalPlayerAlive() then
+        local knifeEnabled = (Config.KNIFE_SKINS_ENABLED ~= false and Config.SKINS_ENABLED ~= false and Config.CUSTOM_PRESETS ~= false)
+        if not knifeEnabled or p1 ~= LocalPlayer or not isLocalPlayerAlive() then
             return originalWeaponNew(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ...)
         end
 
@@ -294,8 +340,8 @@ function SkinChanger.init(Config)
 
     -- knife viewmodel hook
     SkinsLib.GetCameraModel = function(weaponName, skinName, float, statTrack, nameTag, charm, stickers, team)
-        local enabled = (Config.CUSTOM_PRESETS ~= false and Config.SKINS_ENABLED ~= false)
-        if not enabled or not isViewingLocalPlayer() then
+        local knifeEnabled = (Config.KNIFE_SKINS_ENABLED ~= false and Config.SKINS_ENABLED ~= false and Config.CUSTOM_PRESETS ~= false)
+        if not knifeEnabled or not isViewingLocalPlayer() then
             return originalGetCameraModel(weaponName, skinName, float, statTrack, nameTag, charm, stickers, team)
         end
 
@@ -319,15 +365,16 @@ function SkinChanger.init(Config)
 
     -- viewmodel texture hook
     local cameraConn = Camera.ChildAdded:Connect(function(child)
-        local enabled = (Config.CUSTOM_PRESETS ~= false and Config.SKINS_ENABLED ~= false)
-        if not enabled or not isViewingLocalPlayer() then return end
+        local weaponEnabled = (Config.WEAPON_SKINS_ENABLED ~= false and Config.SKINS_ENABLED ~= false and Config.CUSTOM_PRESETS ~= false)
+        if not weaponEnabled or not isViewingLocalPlayer() then return end
 
         if child:IsA("Model") and (child:FindFirstChild("Weapon") or child:FindFirstChild("WeaponL") or child:FindFirstChild("WeaponR")) then
             local weaponName = child.Name
             if not isExemptUtility(weaponName) and not isKnife(weaponName) then
                 task.defer(function()
                     task.wait(0.04)
-                    if (Config.CUSTOM_PRESETS ~= false and Config.SKINS_ENABLED ~= false) and isViewingLocalPlayer() then
+                    local currentEnabled = (Config.WEAPON_SKINS_ENABLED ~= false and Config.SKINS_ENABLED ~= false and Config.CUSTOM_PRESETS ~= false)
+                    if currentEnabled and isViewingLocalPlayer() then
                         local skinName, wear = SkinChanger.getValidSkin(weaponName, Config)
                         if skinName then
                             SkinChanger.applySkinToViewModel(child, weaponName, skinName, wear)
@@ -343,14 +390,12 @@ function SkinChanger.init(Config)
     local function onRoundChange()
         local enabled = (Config.CUSTOM_PRESETS ~= false and Config.SKINS_ENABLED ~= false)
         if not enabled then return end
-        if Config.SKIN_MODE == "Random" then
-            SkinChanger.RandomCache = {}
-            task.delay(0.25, function()
-                if (Config.CUSTOM_PRESETS ~= false and Config.SKINS_ENABLED ~= false) then
-                    SkinChanger.refreshActiveViewmodels(Config)
-                end
-            end)
-        end
+        SkinChanger.RandomCache = {}
+        task.delay(0.25, function()
+            if (Config.CUSTOM_PRESETS ~= false and Config.SKINS_ENABLED ~= false) then
+                SkinChanger.refreshActiveViewmodels(Config)
+            end
+        end)
     end
 
     local charSpawnConn = LocalPlayer.CharacterAdded:Connect(function(char)

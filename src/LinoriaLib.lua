@@ -1,4 +1,5 @@
 local InputService = game:GetService('UserInputService');
+local ContextActionService = game:GetService('ContextActionService');
 local TextService = game:GetService('TextService');
 local CoreGui = game:GetService('CoreGui');
 local Teams = game:GetService('Teams');
@@ -2121,7 +2122,6 @@ do
             Min = Info.Min;
             Max = Info.Max;
             Rounding = Info.Rounding;
-            MaxSize = 232;
             Type = 'Slider';
             Callback = Info.Callback or function(Value) end;
         };
@@ -2160,6 +2160,7 @@ do
             BorderColor3 = Library.OutlineColor;
             BorderMode = Enum.BorderMode.Inset;
             Size = UDim2.new(1, 0, 1, 0);
+            ClipsDescendants = true;
             ZIndex = 6;
             Parent = SliderOuter;
         });
@@ -2172,6 +2173,7 @@ do
         local Fill = Library:Create('Frame', {
             BackgroundColor3 = Library.AccentColor;
             BorderColor3 = Library.AccentColorDark;
+            BorderSizePixel = 0;
             Size = UDim2.new(0, 0, 1, 0);
             ZIndex = 7;
             Parent = SliderInner;
@@ -2228,10 +2230,10 @@ do
                 DisplayLabel.Text = string.format('%s/%s', Slider.Value .. Suffix, Slider.Max .. Suffix);
             end
 
-            local X = math.ceil(Library:MapValue(Slider.Value, Slider.Min, Slider.Max, 0, Slider.MaxSize));
-            Fill.Size = UDim2.new(0, X, 1, 0);
+            local fraction = (Slider.Max == Slider.Min) and 0 or math.clamp((Slider.Value - Slider.Min) / (Slider.Max - Slider.Min), 0, 1);
+            Fill.Size = UDim2.new(fraction, 0, 1, 0);
 
-            HideBorderRight.Visible = not (X == Slider.MaxSize or X == 0);
+            HideBorderRight.Visible = (fraction > 0 and fraction < 1);
         end;
 
         function Slider:OnChanged(Func)
@@ -2241,15 +2243,16 @@ do
 
         local function Round(Value)
             if Slider.Rounding == 0 then
-                return math.floor(Value);
+                return math.floor(Value + 0.5);
             end;
-
 
             return tonumber(string.format('%.' .. Slider.Rounding .. 'f', Value))
         end;
 
         function Slider:GetValueFromXOffset(X)
-            return Round(Library:MapValue(X, 0, Slider.MaxSize, Slider.Min, Slider.Max));
+            local width = math.max(SliderInner.AbsoluteSize.X, 1);
+            local fraction = math.clamp(X / width, 0, 1);
+            return Round(Slider.Min + fraction * (Slider.Max - Slider.Min));
         end;
 
         function Slider:SetValue(Str)
@@ -2270,15 +2273,9 @@ do
 
         SliderInner.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
-                local mPos = Mouse.X;
-                local gPos = Fill.Size.X.Offset;
-                local Diff = mPos - (Fill.AbsolutePosition.X + gPos);
-
                 while InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-                    local nMPos = Mouse.X;
-                    local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, Slider.MaxSize);
-
-                    local nValue = Slider:GetValueFromXOffset(nX);
+                    local relX = Mouse.X - SliderInner.AbsolutePosition.X;
+                    local nValue = Slider:GetValueFromXOffset(relX);
                     local OldValue = Slider.Value;
                     Slider.Value = nValue;
 
@@ -3688,9 +3685,20 @@ function Library:CreateWindow(...)
         local FadeTime = Config.MenuFadeTime;
         Fading = true;
         Toggled = (not Toggled);
+        Library.Toggled = Toggled;
         ModalElement.Modal = Toggled;
 
         if Toggled then
+            pcall(function()
+                ContextActionService:BindActionAtPriority(
+                    "__linoriaMenuScrollSink",
+                    function() return Enum.ContextActionResult.Sink end,
+                    false,
+                    Enum.ContextActionPriority.High.Value + 2000,
+                    Enum.UserInputType.MouseWheel
+                )
+            end)
+
             -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
             Outer.Visible = true;
 
@@ -3732,6 +3740,10 @@ function Library:CreateWindow(...)
                 Cursor:Remove();
                 CursorOutline:Remove();
             end);
+        else
+            pcall(function()
+                ContextActionService:UnbindAction("__linoriaMenuScrollSink")
+            end)
         end;
 
         for _, Desc in next, Outer:GetDescendants() do
@@ -3776,11 +3788,13 @@ function Library:CreateWindow(...)
     end
 
     Library:GiveSignal(InputService.InputBegan:Connect(function(Input, Processed)
-        if type(Library.ToggleKeybind) == 'table' and Library.ToggleKeybind.Type == 'KeyPicker' then
-            if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode.Name == Library.ToggleKeybind.Value then
-                task.spawn(Library.Toggle)
-            end
-        elseif Input.KeyCode == Enum.KeyCode.RightControl or (Input.KeyCode == Enum.KeyCode.RightShift and (not Processed)) then
+        if InputService:GetFocusedTextBox() then return end
+        if Library.IsPickingKey then return end
+
+        local isCustomKey = (type(Library.ToggleKeybind) == 'table' and Library.ToggleKeybind.Type == 'KeyPicker' and Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode.Name == Library.ToggleKeybind.Value and Library.ToggleKeybind.Value ~= 'None')
+        local isDefaultKey = (Input.KeyCode == Enum.KeyCode.RightShift or Input.KeyCode == Enum.KeyCode.RightControl)
+
+        if isCustomKey or isDefaultKey then
             task.spawn(Library.Toggle)
         end
     end))
