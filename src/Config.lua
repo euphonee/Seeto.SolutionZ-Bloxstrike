@@ -20,11 +20,11 @@ end
 local Config = {
     -- aim
     SILENT_AIM_ENABLED = true,
-    KEEP_TARGET_LOCK = false,
-    FOV_DEG = 12,
+    KEEP_TARGET_LOCK = true,
+    FOV_DEG = 13,
     FALLOFF_REF = 500,
     FOV_CIRCLE_ENABLED = true,
-    FOV_CIRCLE_TRANSPARENCY = 0.36,
+    FOV_CIRCLE_TRANSPARENCY = 0.34,
     FOV_CIRCLE_COLOR = Color3.fromRGB(255, 255, 255),
     BODYPART_TARGET_HL = true,
     BODYPART_HL_COLOR = Color3.fromRGB(255, 255, 0),
@@ -51,11 +51,11 @@ local Config = {
 
     -- utilities
     ANTI_FLASH_ENABLED = true,
-    ANTI_FLASH_TRANSPARENCY = 0.29,
+    ANTI_FLASH_TRANSPARENCY = 0.27,
 
     -- weapons
     CUSTOM_RPM_ENABLED = false,
-    CUSTOM_RPM_VALUE = 1491,
+    CUSTOM_RPM_VALUE = 1018,
     FORCE_FULL_AUTO = false,
 
     -- skins
@@ -76,12 +76,12 @@ local Config = {
     TOGGLE_AIM_KEY = nil,
     AIM_BIND_MODE = "Toggle",
     TOGGLE_ESP_KEY = nil,
-    UNLOAD_KEY = Enum.KeyCode.K,
+    UNLOAD_KEY = Enum.KeyCode.P,
 
     -- ui state
     MENU_OPEN = true,
-    WINDOW_SIZE_X = 440,
-    WINDOW_SIZE_Y = 210,
+    WINDOW_SIZE_X = 442,
+    WINDOW_SIZE_Y = 292,
 
     -- visual colors
     CT_COLOR = Color3.fromRGB(0, 160, 255),
@@ -111,10 +111,10 @@ local Config = {
 -- defaults
 local DEFAULT_VALUES = {
     SILENT_AIM_ENABLED = true,
-    KEEP_TARGET_LOCK = false,
-    FOV_DEG = 12,
+    KEEP_TARGET_LOCK = true,
+    FOV_DEG = 13,
     FOV_CIRCLE_ENABLED = true,
-    FOV_CIRCLE_TRANSPARENCY = 0.36,
+    FOV_CIRCLE_TRANSPARENCY = 0.34,
     BODYPART_TARGET_HL = true,
     TARGET_PRIORITY = "Auto",
     WALLBANG_ENABLED = false,
@@ -127,9 +127,9 @@ local DEFAULT_VALUES = {
     SPECTATE_CHECKER_ENABLED = true,
     BHOP_ENABLED = true,
     ANTI_FLASH_ENABLED = true,
-    ANTI_FLASH_TRANSPARENCY = 0.29,
+    ANTI_FLASH_TRANSPARENCY = 0.27,
     CUSTOM_RPM_ENABLED = false,
-    CUSTOM_RPM_VALUE = 1491,
+    CUSTOM_RPM_VALUE = 1018,
     FORCE_FULL_AUTO = false,
     AUTO_LAUNCH_SKINCHANGER = false,
     SKINS_ENABLED = true,
@@ -141,8 +141,8 @@ local DEFAULT_VALUES = {
     SELECTED_SKINS = {},
     SKIN_MODE = "Special",
     EQUIP_BUTTERFLY_KNIFE = true,
-    WINDOW_SIZE_X = 440,
-    WINDOW_SIZE_Y = 210,
+    WINDOW_SIZE_X = 442,
+    WINDOW_SIZE_Y = 292,
     TOGGLE_UI_KEY = "Insert",
     TOGGLE_UI_KEY_ALT = "RightShift",
     TOGGLE_AIM_KEY = "None",
