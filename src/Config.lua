@@ -75,6 +75,8 @@ local Config = {
 
     -- ui state
     MENU_OPEN = true,
+    WINDOW_SIZE_X = 440,
+    WINDOW_SIZE_Y = 210,
 
     -- visual colors
     CT_COLOR = Color3.fromRGB(0, 160, 255),
@@ -128,6 +130,8 @@ local DEFAULT_VALUES = {
     KNIFE_MODEL = "Butterfly Knife",
     SKIN_MODE = "Special",
     EQUIP_BUTTERFLY_KNIFE = true,
+    WINDOW_SIZE_X = 440,
+    WINDOW_SIZE_Y = 210,
     TOGGLE_UI_KEY = "Insert",
     TOGGLE_UI_KEY_ALT = "RightShift",
     TOGGLE_AIM_KEY = "None",
@@ -273,6 +277,7 @@ function Config.save()
         FOV_CIRCLE_TRANSPARENCY = Config.FOV_CIRCLE_TRANSPARENCY,
         BODYPART_TARGET_HL = Config.BODYPART_TARGET_HL,
         TARGET_PRIORITY = Config.TARGET_PRIORITY or "Auto",
+        WALLBANG_ENABLED = Config.WALLBANG_ENABLED,
 
         ESP_ENABLED = Config.ESP_ENABLED,
         SKELETON_ENABLED = Config.SKELETON_ENABLED,
@@ -295,6 +300,9 @@ function Config.save()
         KNIFE_MODEL = Config.KNIFE_MODEL or "Butterfly Knife",
         SKIN_MODE = Config.SKIN_MODE or "Special",
         EQUIP_BUTTERFLY_KNIFE = Config.EQUIP_BUTTERFLY_KNIFE,
+
+        WINDOW_SIZE_X = Config.WINDOW_SIZE_X or 440,
+        WINDOW_SIZE_Y = Config.WINDOW_SIZE_Y or 210,
 
         TOGGLE_UI_KEY = Config.TOGGLE_UI_KEY and Config.TOGGLE_UI_KEY.Name or "None",
         TOGGLE_UI_KEY_ALT = Config.TOGGLE_UI_KEY_ALT and Config.TOGGLE_UI_KEY_ALT.Name or "None",
@@ -364,6 +372,9 @@ function Config.load()
         elseif key == "FOV_RADIUS" and not data.FOV_DEG then
             local num = tonumber(val) or 30
             Config.FOV_DEG = (num > 180) and 30 or num
+        elseif key == "WINDOW_SIZE_X" or key == "WINDOW_SIZE_Y" then
+            local num = tonumber(val)
+            if num and num > 0 then Config[key] = num end
         elseif Config[key] ~= nil and type(Config[key]) == type(val) then
             Config[key] = val
         end

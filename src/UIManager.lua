@@ -51,11 +51,19 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
 
     -- window
     local Window = Library:CreateWindow({
-        Title = "Seeto.SolutionZ / Bloxstrike / v2.3",
+        Title = "Seeto.SolutionZ / Bloxstrike / v2.4",
         Center = true,
         AutoShow = (Config.MENU_OPEN ~= false),
-        TabPadding = 8,
-        MenuFadeTime = 0.2
+        TabPadding = 6,
+        MenuFadeTime = 0.2,
+        Size = UDim2.fromOffset(Config.WINDOW_SIZE_X or 440, Config.WINDOW_SIZE_Y or 210),
+        ResizeCallback = function(w, h)
+            if Config.WINDOW_SIZE_X ~= w or Config.WINDOW_SIZE_Y ~= h then
+                Config.WINDOW_SIZE_X = w
+                Config.WINDOW_SIZE_Y = h
+                queueAutoSave()
+            end
+        end
     })
     UIManager.Window = Window
 
@@ -438,6 +446,11 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
             if Toggles.KeepLock then Toggles.KeepLock:SetValue(Config.KEEP_TARGET_LOCK) end
             if Options.TargetPriority then Options.TargetPriority:SetValue(Config.TARGET_PRIORITY or "Auto") end
 
+            if Toggles.CustomRpm then Toggles.CustomRpm:SetValue(Config.CUSTOM_RPM_ENABLED) end
+            if Options.RpmSlider then Options.RpmSlider:SetValue(Config.CUSTOM_RPM_VALUE or 1491) end
+            if Toggles.ForceFullAuto then Toggles.ForceFullAuto:SetValue(Config.FORCE_FULL_AUTO) end
+            if Toggles.Wallbang then Toggles.Wallbang:SetValue(Config.WALLBANG_ENABLED) end
+
             if Toggles.EspMaster then Toggles.EspMaster:SetValue(Config.ESP_ENABLED) end
             if Toggles.SkeletonEsp then Toggles.SkeletonEsp:SetValue(Config.SKELETON_ENABLED) end
             if Toggles.ViewAngle then Toggles.ViewAngle:SetValue(Config.VIEWANGLE_ENABLED) end
@@ -463,6 +476,12 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
             if Options.AimBindMode then Options.AimBindMode:SetValue("Toggle") end
             if Options.EspKeybind then Options.EspKeybind:SetValue("None") end
             if Options.UnloadKeybind then Options.UnloadKeybind:SetValue("K") end
+
+            Config.WINDOW_SIZE_X = 440
+            Config.WINDOW_SIZE_Y = 210
+            if Window and Window.Outer then
+                Window.Outer.Size = UDim2.fromOffset(440, 210)
+            end
 
             queueAutoSave()
             Library:Notify("Settings reset to defaults", 2)
@@ -534,7 +553,7 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
     end)
     table.insert(UIManager.Connections, bindInputBegan)
 
-    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.3 Loaded!", 3)
+    Library:Notify("Seeto.SolutionZ / Bloxstrike / v2.4 Loaded!", 3)
 end
 
 function UIManager.cleanup()

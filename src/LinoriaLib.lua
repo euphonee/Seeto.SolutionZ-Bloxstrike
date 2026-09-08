@@ -191,10 +191,22 @@ function Library:MakeDraggable(Instance, Cutoff)
 end;
 
 function Library:MakeResizable(Instance, MinWidth, MinHeight, MaxWidth, MaxHeight, ResizeCallback)
-    MinWidth = MinWidth or 480;
-    MinHeight = MinHeight or 360;
-    MaxWidth = MaxWidth or 1200;
-    MaxHeight = MaxHeight or 900;
+    local function getMinWidth()
+        if type(MinWidth) == 'function' then return MinWidth() end
+        return MinWidth or 440;
+    end
+    local function getMinHeight()
+        if type(MinHeight) == 'function' then return MinHeight() end
+        return MinHeight or 210;
+    end
+    local function getMaxWidth()
+        if type(MaxWidth) == 'function' then return MaxWidth() end
+        return MaxWidth or 1200;
+    end
+    local function getMaxHeight()
+        if type(MaxHeight) == 'function' then return MaxHeight() end
+        return MaxHeight or 900;
+    end
 
     local ResizeGrip = Library:Create('ImageButton', {
         AnchorPoint = Vector2.new(1, 1),
@@ -254,8 +266,8 @@ function Library:MakeResizable(Instance, MinWidth, MinHeight, MaxWidth, MaxHeigh
                 local deltaX = Mouse.X - startMouse.X;
                 local deltaY = Mouse.Y - startMouse.Y;
 
-                local newWidth = math.clamp(startSize.X + deltaX, MinWidth, MaxWidth);
-                local newHeight = math.clamp(startSize.Y + deltaY, MinHeight, MaxHeight);
+                local newWidth = math.clamp(startSize.X + deltaX, getMinWidth(), getMaxWidth());
+                local newHeight = math.clamp(startSize.Y + deltaY, getMinHeight(), getMaxHeight());
 
                 Instance.Size = UDim2.fromOffset(newWidth, newHeight);
 
@@ -3093,7 +3105,7 @@ function Library:CreateWindow(...)
     if type(Config.MenuFadeTime) ~= 'number' then Config.MenuFadeTime = 0.2 end
 
     if typeof(Config.Position) ~= 'UDim2' then Config.Position = UDim2.fromOffset(175, 50) end
-    if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(550, 600) end
+    if typeof(Config.Size) ~= 'UDim2' then Config.Size = UDim2.fromOffset(440, 210) end
 
     if Config.Center then
         Config.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -3114,9 +3126,6 @@ function Library:CreateWindow(...)
         ZIndex = 1;
         Parent = ScreenGui;
     });
-
-    Library:MakeDraggable(Outer, 25);
-    Library:MakeResizable(Outer, 480, 360, 1200, 900);
 
     local Inner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
@@ -3184,6 +3193,19 @@ function Library:CreateWindow(...)
         SortOrder = Enum.SortOrder.LayoutOrder;
         Parent = TabArea;
     });
+
+    local function getDynamicMinWidth()
+        local contentW = TabListLayout.AbsoluteContentSize.X;
+        if contentW and contentW > 0 then
+            return math.max(contentW + 36, Config.MinWidth or 440);
+        end
+        return Config.MinWidth or 440;
+    end
+
+    Library:MakeDraggable(Outer, 25);
+    Library:MakeResizable(Outer, getDynamicMinWidth, Config.MinHeight or 210, Config.MaxWidth or 1200, Config.MaxHeight or 900, Config.ResizeCallback);
+
+    Window.Outer = Outer;
 
     local TabContainer = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
@@ -3260,12 +3282,13 @@ function Library:CreateWindow(...)
         local LeftSide = Library:Create('ScrollingFrame', {
             BackgroundTransparency = 1;
             BorderSizePixel = 0;
-            Position = UDim2.new(0, 8 - 1, 0, 8 - 1);
-            Size = UDim2.new(0.5, -12 + 2, 0, 507 + 2);
+            Position = UDim2.new(0, 6, 0, 6);
+            Size = UDim2.new(0.5, -9, 1, -12);
             CanvasSize = UDim2.new(0, 0, 0, 0);
-            BottomImage = '';
-            TopImage = '';
-            ScrollBarThickness = 0;
+            BottomImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png';
+            TopImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png';
+            ScrollBarThickness = 2;
+            ScrollBarImageColor3 = Library.AccentColor;
             ZIndex = 2;
             Parent = TabFrame;
         });
@@ -3273,12 +3296,13 @@ function Library:CreateWindow(...)
         local RightSide = Library:Create('ScrollingFrame', {
             BackgroundTransparency = 1;
             BorderSizePixel = 0;
-            Position = UDim2.new(0.5, 4 + 1, 0, 8 - 1);
-            Size = UDim2.new(0.5, -12 + 2, 0, 507 + 2);
+            Position = UDim2.new(0.5, 3, 0, 6);
+            Size = UDim2.new(0.5, -9, 1, -12);
             CanvasSize = UDim2.new(0, 0, 0, 0);
-            BottomImage = '';
-            TopImage = '';
-            ScrollBarThickness = 0;
+            BottomImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png';
+            TopImage = 'rbxasset://textures/ui/Scroll/scroll-middle.png';
+            ScrollBarThickness = 2;
+            ScrollBarImageColor3 = Library.AccentColor;
             ZIndex = 2;
             Parent = TabFrame;
         });
@@ -3300,6 +3324,9 @@ function Library:CreateWindow(...)
         });
 
         for _, Side in next, { LeftSide, RightSide } do
+            Library:AddToRegistry(Side, {
+                ScrollBarImageColor3 = 'AccentColor'
+            });
             Side:WaitForChild('UIListLayout'):GetPropertyChangedSignal('AbsoluteContentSize'):Connect(function()
                 Side.CanvasSize = UDim2.fromOffset(0, Side.UIListLayout.AbsoluteContentSize.Y);
             end);
