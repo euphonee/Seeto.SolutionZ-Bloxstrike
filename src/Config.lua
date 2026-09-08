@@ -137,7 +137,7 @@ local DEFAULT_VALUES = {
     TOGGLE_AIM_KEY = "None",
     AIM_BIND_MODE = "Toggle",
     TOGGLE_ESP_KEY = "None",
-    UNLOAD_KEY = "K"
+    UNLOAD_KEY = "P"
 }
 
 Config._keysDown = {}
