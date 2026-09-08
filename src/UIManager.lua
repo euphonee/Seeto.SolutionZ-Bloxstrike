@@ -316,17 +316,22 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
         Text = "Bunny hop",
         Default = (Config.BHOP_ENABLED ~= false),
         Tooltip = "Automatic jump execution via native MovementV2 physics",
-    -- skins tab (separated)
-    local SkinPlaceholderGroup = Tabs.Skins:AddLeftGroupbox("Skin Changer")
-    SkinPlaceholderGroup:AddLabel("Skin changer has been separated into standalone module.")
-    SkinPlaceholderGroup:AddButton({
-        Text = "Placeholder (Standalone Module)",
+        Callback = function(Value)
+            updateSetting("BHOP_ENABLED", Value)
+        end
+    })
+
+    -- skins tab
+    local SkinsBox = Tabs.Skins:AddLeftGroupbox("Skins")
+    SkinsBox:AddButton({
+        Text = "Placeholder",
         Func = function()
-            Library:Notify("Skin changer is separated into Seeto.Solutionz-Bloxstrike-Skinchanger", 3)
+            Library:Notify("Skin changer moved to standalone repository", 2)
         end,
         DoubleClick = false,
-        Tooltip = "Skin changer standalone logic"
+        Tooltip = "Placeholder"
     })
+
 
 
     -- settings tab
