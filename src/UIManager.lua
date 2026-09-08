@@ -322,15 +322,27 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
     })
 
     -- skins tab
-    local SkinsBox = Tabs.Skins:AddLeftGroupbox("Skins")
+    local SkinsBox = Tabs.Skins:AddLeftGroupbox("Skin Changer")
     SkinsBox:AddButton({
-        Text = "Placeholder",
+        Text = "Launch Skinchanger UI",
         Func = function()
-            Library:Notify("Skin changer moved to standalone repository", 2)
+            Library:Notify("Loading Skinchanger from GitHub...", 2)
+            task.spawn(function()
+                local ok, err = pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Solutionz-Bloxstrike-Skinchanger/main/init.lua"))()
+                end)
+                if not ok then
+                    warn("[Bloxstrike] Failed to load skinchanger:", err)
+                    Library:Notify("Failed to load skinchanger: " .. tostring(err), 4)
+                else
+                    Library:Notify("Skinchanger loaded successfully!", 2)
+                end
+            end)
         end,
         DoubleClick = false,
-        Tooltip = "Placeholder"
+        Tooltip = "Executes the standalone Skinchanger from GitHub"
     })
+
 
 
 

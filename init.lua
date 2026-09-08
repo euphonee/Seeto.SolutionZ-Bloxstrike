@@ -133,9 +133,11 @@ local function cleanup()
     pcall(function() fovCircle:Remove() end)
     
     _G.__bloxstrikeJanitor = nil
+    _G.__bloxstrikeConfig = nil
 end
 
 _G.__bloxstrikeJanitor = cleanup
+_G.__bloxstrikeConfig = Config
 
 -- init ui
 UIManager.init(Config, LinoriaLib, nil, WeaponEngine, cleanup)
