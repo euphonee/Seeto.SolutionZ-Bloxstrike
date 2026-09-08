@@ -213,14 +213,12 @@ function WeaponEngine.init(Config)
         table.insert(WeaponEngine.Connections, conn)
     end
 
-    -- sync loop
-    WeaponEngine.LoopActive = true
-    task.spawn(function()
-        while WeaponEngine.LoopActive do
+    local charConn = game:GetService('Players').LocalPlayer.CharacterAdded:Connect(function()
+        task.delay(0.25, function()
             pcall(WeaponEngine.sync, Config)
-            task.wait(0.35)
-        end
+        end)
     end)
+    table.insert(WeaponEngine.Connections, charConn)
 
     -- initial sync
     WeaponEngine.sync(Config)
