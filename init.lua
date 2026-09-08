@@ -145,8 +145,25 @@ UIManager.init(Config, LinoriaLib, nil, WeaponEngine, cleanup)
 -- auto-launch skinchanger if enabled
 if Config.AUTO_LAUNCH_SKINCHANGER == true then
     task.spawn(function()
+        if type(readfile) == "function" then
+            local localPaths = {
+                "Seeto.Solutionz-Bloxstrike-Skinchanger/init.lua",
+                "Bloxstrike-Skinchanger/init.lua"
+            }
+            for _, path in ipairs(localPaths) do
+                local okRead, content = pcall(readfile, path)
+                if okRead and content and #content > 0 then
+                    local fn = loadstring(content)
+                    if fn then
+                        local okExec = pcall(fn)
+                        if okExec then return end
+                    end
+                end
+            end
+        end
+
         pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Solutionz-Bloxstrike-Skinchanger/main/init.lua"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Solutionz-Bloxstrike-Skinchanger/main/init.lua?t=" .. tostring(os.time())))()
         end)
     end)
 end

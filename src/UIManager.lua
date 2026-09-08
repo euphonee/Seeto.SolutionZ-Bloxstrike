@@ -335,21 +335,55 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
     SkinsBox:AddButton({
         Text = "Launch Skinchanger UI",
         Func = function()
-            Library:Notify("Loading Skinchanger from GitHub...", 2)
             task.spawn(function()
-                local ok, err = pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Solutionz-Bloxstrike-Skinchanger/main/init.lua"))()
-                end)
-                if not ok then
-                    warn("[Bloxstrike] Failed to load skinchanger:", err)
-                    Library:Notify("Failed to load skinchanger: " .. tostring(err), 4)
-                else
-                    Library:Notify("Skinchanger loaded successfully!", 2)
+                -- 1. Try local workspace files first
+                if type(readfile) == "function" then
+                    local localPaths = {
+                        "Seeto.Solutionz-Bloxstrike-Skinchanger/init.lua",
+                        "Bloxstrike-Skinchanger/init.lua"
+                    }
+                    for _, path in ipairs(localPaths) do
+                        local okRead, content = pcall(readfile, path)
+                        if okRead and content and #content > 0 then
+                            local fn, loadErr = loadstring(content)
+                            if fn then
+                                local okExec, execErr = pcall(fn)
+                                if okExec then
+                                    Library:Notify("Skinchanger loaded (local)!", 2)
+                                    return
+                                else
+                                    warn("[Bloxstrike] Local skinchanger execution error:", execErr)
+                                end
+                            end
+                        end
+                    end
                 end
+
+                -- 2. Remote GitHub with cache-busting timestamp
+                Library:Notify("Fetching Skinchanger from GitHub...", 2)
+                local okHttp, content = pcall(function()
+                    return game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Solutionz-Bloxstrike-Skinchanger/main/init.lua?t=" .. tostring(os.time()))
+                end)
+                if okHttp and content and #content > 0 then
+                    local fn, loadErr = loadstring(content)
+                    if fn then
+                        local okExec, execErr = pcall(fn)
+                        if okExec then
+                            Library:Notify("Skinchanger loaded successfully!", 2)
+                            return
+                        else
+                            warn("[Bloxstrike] Skinchanger execution error:", execErr)
+                            Library:Notify("Execution error: " .. tostring(execErr), 4)
+                            return
+                        end
+                    end
+                end
+
+                Library:Notify("Failed to fetch skinchanger from GitHub", 4)
             end)
         end,
         DoubleClick = false,
-        Tooltip = "Executes the standalone Skinchanger from GitHub"
+        Tooltip = "Executes the standalone Skinchanger (local/GitHub)"
     })
 
 
