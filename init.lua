@@ -142,6 +142,15 @@ _G.__bloxstrikeConfig = Config
 -- init ui
 UIManager.init(Config, LinoriaLib, nil, WeaponEngine, cleanup)
 
+-- auto-launch skinchanger if enabled
+if Config.AUTO_LAUNCH_SKINCHANGER == true then
+    task.spawn(function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/euphonee/Seeto.Solutionz-Bloxstrike-Skinchanger/main/init.lua"))()
+        end)
+    end)
+end
+
 -- render loop
 renderConn = RunService.RenderStepped:Connect(function(dt)
     local vpCenter = Camera.ViewportSize * 0.5

@@ -59,6 +59,7 @@ local Config = {
     FORCE_FULL_AUTO = false,
 
     -- skins
+    AUTO_LAUNCH_SKINCHANGER = false,
     SKINS_ENABLED = true,
     KNIFE_SKINS_ENABLED = true,
     WEAPON_SKINS_ENABLED = true,
@@ -130,6 +131,7 @@ local DEFAULT_VALUES = {
     CUSTOM_RPM_ENABLED = false,
     CUSTOM_RPM_VALUE = 1491,
     FORCE_FULL_AUTO = false,
+    AUTO_LAUNCH_SKINCHANGER = false,
     SKINS_ENABLED = true,
     KNIFE_SKINS_ENABLED = true,
     WEAPON_SKINS_ENABLED = true,
@@ -304,6 +306,7 @@ function Config.save()
         CUSTOM_RPM_ENABLED = Config.CUSTOM_RPM_ENABLED,
         CUSTOM_RPM_VALUE = Config.CUSTOM_RPM_VALUE,
         FORCE_FULL_AUTO = Config.FORCE_FULL_AUTO,
+        AUTO_LAUNCH_SKINCHANGER = (Config.AUTO_LAUNCH_SKINCHANGER == true),
 
         SKINS_ENABLED = Config.SKINS_ENABLED,
         KNIFE_SKINS_ENABLED = Config.KNIFE_SKINS_ENABLED,
@@ -376,6 +379,8 @@ function Config.load()
             end
         elseif key == "AIM_BIND_MODE" then
             Config.AIM_BIND_MODE = (val == "Hold") and "Hold" or "Toggle"
+        elseif key == "AUTO_LAUNCH_SKINCHANGER" then
+            Config.AUTO_LAUNCH_SKINCHANGER = (val == true)
         elseif key == "KNIFE_SKINS_ENABLED" then
             Config.KNIFE_SKINS_ENABLED = (val == true)
         elseif key == "WEAPON_SKINS_ENABLED" then

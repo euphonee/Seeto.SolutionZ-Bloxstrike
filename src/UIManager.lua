@@ -323,6 +323,15 @@ function UIManager.init(Config, Library, SkinChanger, WeaponEngine, unloadCallba
 
     -- skins tab
     local SkinsBox = Tabs.Skins:AddLeftGroupbox("Skin Changer")
+    SkinsBox:AddToggle("AutoLaunchSkinchanger", {
+        Text = "Auto-launch on startup",
+        Default = (Config.AUTO_LAUNCH_SKINCHANGER == true),
+        Tooltip = "Automatically executes the standalone Skinchanger from GitHub when Bloxstrike is initialized",
+        Callback = function(Value)
+            updateSetting("AUTO_LAUNCH_SKINCHANGER", Value)
+        end
+    })
+
     SkinsBox:AddButton({
         Text = "Launch Skinchanger UI",
         Func = function()
