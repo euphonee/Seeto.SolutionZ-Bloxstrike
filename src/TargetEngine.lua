@@ -95,14 +95,16 @@ function TargetEngine.update(Config, Utils, DamageEngine)
     else
         local lockedChar = Config.LockedTargetChar
         local lockedValid = false
+        local camCFrame = Camera.CFrame
+        local camPos = camCFrame.Position
+        local camLook = camCFrame.LookVector
         local fovLimit = Config.FOV_DEG or 30
 
         local function getAngleDeg(targetPos)
-            local camCFrame = Camera.CFrame
-            local dir = targetPos - camCFrame.Position
+            local dir = targetPos - camPos
             local mag = dir.Magnitude
             if mag == 0 then return 0 end
-            local dot = math.clamp(camCFrame.LookVector:Dot(dir / mag), -1, 1)
+            local dot = math.clamp(camLook:Dot(dir / mag), -1, 1)
             return math.deg(math.acos(dot))
         end
 

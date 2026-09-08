@@ -12,7 +12,6 @@ local Bhop = {
 }
 
 local originalSampleInput = nil
-local jumpTickToggle = false
 
 function Bhop.init(Config)
     if Bhop.Initialized then return end
@@ -41,14 +40,17 @@ function Bhop.init(Config)
         local sample = originalSampleInput(self, p2)
         if not sample then return sample end
 
-        -- bhop jump toggle
+        -- bhop jump logic: jump immediately upon landing
         local bhopEnabled = (Config.BHOP_ENABLED ~= false)
         local isSpaceDown = Bhop.IsHoldingSpace or UserInputService:IsKeyDown(Enum.KeyCode.Space)
         if bhopEnabled and isSpaceDown then
-            jumpTickToggle = not jumpTickToggle
-            sample.Buttons = Buttons.with(sample.Buttons, Buttons.Jump, jumpTickToggle)
-        elseif not isSpaceDown then
-            jumpTickToggle = false
+            local mvState = self.MovementState
+            local onGround = mvState and mvState.OnGround
+            if onGround then
+                sample.Buttons = Buttons.with(sample.Buttons, Buttons.Jump, true)
+            else
+                sample.Buttons = Buttons.with(sample.Buttons, Buttons.Jump, false)
+            end
         end
 
         return sample

@@ -96,11 +96,11 @@ function ESPManager.update(Config, Utils, SkeletonRenderer)
             baseColor = isCT and Config.CT_COLOR or Config.T_COLOR
         end
 
-        -- occlusion color dimming (20hz)
+        -- occlusion color dimming (10hz)
         local isOccluded = false
         if Config.OCCLUSION_CHECK_ENABLED then
             local now = os.clock()
-            if (now - (occlusionTime[char] or 0)) > 0.05 then
+            if (now - (occlusionTime[char] or 0)) > 0.1 then
                 occlusionCache[char] = Utils.isTargetOccluded(char)
                 occlusionTime[char] = now
             end
